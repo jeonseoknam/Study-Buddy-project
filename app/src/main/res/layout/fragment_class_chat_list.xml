@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ClassChatListFragment"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+        <ImageView
+            android:id="@+id/accountImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_account_circle_24"
+            android:layout_marginLeft="20dp"
+            android:layout_alignTop="@id/schoolChatNameText"
+            android:layout_alignBottom="@id/schoolChatNameText"/>
+
+
+
+        <TextView
+            android:id="@+id/schoolChatNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="숭실대학교 채팅"
+            android:textSize="24dp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_toRightOf="@id/accountImage"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_below="@id/accountImage"
+            android:layout_marginTop="10dp">
+
+            <EditText
+                android:id="@+id/chatSearchEdittext"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="채팅방 검색..."
+                android:textColorHint="#858585"
+                android:inputType="text"
+                android:padding="12dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="10dp"
+                android:paddingStart="15dp"
+                android:background="@drawable/rounded_edittext"/>
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <!-- 테마가 적용된 버튼 -->
+                <Button
+                    android:id="@+id/btn_chatSearch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text=""
+                    android:contentDescription="Themed button" />
+
+                <!-- 버튼 위에 추가되는 벡터 아이콘 -->
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/baseline_search_24"
+                    android:layout_gravity="center"
+                    android:contentDescription="Icon" />
+            </FrameLayout>
+
+        </LinearLayout>
+    </RelativeLayout>
+
+    <com.google.android.material.tabs.TabLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="16dp"
+        android:layout_marginLeft="16dp"
+        app:tabTextColor="#858585"
+        app:tabSelectedTextColor="#FFFFFF"
+        android:background="?attr/selectableItemBackgroundBorderless">
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/btn_perClassChat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="강의별 채팅"/>
+
+        <com.google.android.material.tabs.TabItem
+            android:id="@+id/btn_perPersonChat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="개인별 채팅"/>
+
+    </com.google.android.material.tabs.TabLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="10dp"
+        android:scrollbars="vertical"
+        tools:listitem="@layout/chat_recycler_view"/>
+
+
+
+</LinearLayout>
