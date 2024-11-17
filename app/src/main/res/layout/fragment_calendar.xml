@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- 캘린더 뷰 -->
+    <CalendarView
+        android:id="@+id/calendar_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:background="#FFFFFF"
+        />
+
+    <!-- 일정 입력 -->
+    <EditText
+        android:id="@+id/input_schedule"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/calendar_view"
+        android:layout_marginTop="16dp"
+        android:hint="일정을 입력하세요"
+        android:textColorHint="#FFFFFF"
+        android:textColor="#FFFFFF"
+        android:padding="12dp"
+        android:background="@drawable/rounded_edittext" />
+
+    <!-- 전체 공유 일정 확인 -->
+    <TextView
+        android:id="@+id/share_prompt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/input_schedule"
+        android:layout_marginTop="16dp"
+        android:text="일정을 등록하시겠습니까?"
+        android:textSize="16sp" />
+
+    <!-- 공유 확인 버튼 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/share_prompt"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btn_yes"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="예"
+            android:layout_marginEnd="16dp" />
+
+        <Button
+            android:id="@+id/btn_no"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="아니오" />
+    </LinearLayout>
+</RelativeLayout>
