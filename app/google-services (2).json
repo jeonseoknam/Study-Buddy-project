@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "416966149867",
+    "project_id": "register-fed2c",
+    "storage_bucket": "register-fed2c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416966149867:android:0ce25b7ec21ecfed52e0ae",
+        "android_client_info": {
+          "package_name": "com.example.studybuddy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFQVOPqi-MhGQrXEOAlMECrsP5C405Llc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:416966149867:android:5f735cbdeaea638b52e0ae",
+        "android_client_info": {
+          "package_name": "com.foo.login_register"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFQVOPqi-MhGQrXEOAlMECrsP5C405Llc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

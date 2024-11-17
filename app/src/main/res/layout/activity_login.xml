@@ -41,6 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/emailText"
         android:hint="email 입력..."
+        android:textColor="#FFFFFF"
         android:textColorHint="#858585"
         android:inputType="textEmailAddress"
         android:padding="12dp"
@@ -66,6 +67,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/passwordText"
         android:hint="비밀번호 입력..."
+        android:textColor="#FFFFFF"
         android:textColorHint="#858585"
         android:inputType="textPassword"
         android:padding="12dp"
@@ -83,16 +85,18 @@
         android:text="로그인"
         android:layout_marginTop="20dp"
         android:textSize="20dp"/>
+
     <TextView
         android:id="@+id/toSignUpText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="아직 회원이 아니신가요?"
-        android:textSize="15dp"
-        android:textColor="#858585"
-        android:layout_centerHorizontal="true"
         android:layout_below="@id/btn_Login"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp"
         android:clickable="true"
         android:focusable="true"
-        android:layout_marginTop="10dp"/>
+        android:minHeight="48dp"
+        android:text="아직 회원이 아니신가요?"
+        android:textColor="#FFFFFF"
+        android:textSize="15dp" />
 </RelativeLayout>
