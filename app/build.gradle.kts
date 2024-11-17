@@ -52,4 +52,5 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     implementation ("com.google.code.gson:gson:2.9.0")
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
+    implementation ("androidx.core:core-ktx:1.10.1")
 }

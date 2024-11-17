@@ -1,9 +1,13 @@
 package com.example.studybuddy;
 
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -37,6 +41,25 @@ public class MyTimerFragment extends Fragment {
     private Handler handler = new Handler(Looper.getMainLooper());
     private int elapsedTime = 0; // 경과 시간 (단위: 초)
     private boolean isRunning = false;
+
+    private TimerService timerService;
+    private boolean isServiceBound = false;
+
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            TimerService.TimerBinder binder = (TimerService.TimerBinder) service;
+            timerService = binder.getService();
+            isServiceBound = true;
+            updateUI(); // 서비스에 연결된 후 UI 업데이트
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            isServiceBound = false;
+        }
+    };
 
     private Runnable timerRunnable = new Runnable() {
         @Override
@@ -77,6 +100,11 @@ public class MyTimerFragment extends Fragment {
         pauseButton.setOnClickListener(v -> toggleTimer());
         deleteButton.setOnClickListener(v -> resetTimer());
 
+        if (isServiceBound) {
+            timerService.resetTimer();
+            updateUI();
+        }
+
         //등록 버튼
         registerButton.setOnClickListener(v -> {
             String time = timerText.getText().toString();
@@ -107,19 +135,6 @@ public class MyTimerFragment extends Fragment {
         circularProgress.setProgress(progress);
     }
 
-    private void toggleTimer() {
-        if (isRunning) {
-            // 타이머 중지
-            isRunning = false;
-            handler.removeCallbacks(timerRunnable);
-            pauseButton.setText("시작");
-        } else {
-            // 타이머 시작
-            isRunning = true;
-            handler.post(timerRunnable);
-            pauseButton.setText("일시정지");
-        }
-    }
 
     private void resetTimer() {
         // 타이머 리셋
@@ -131,10 +146,47 @@ public class MyTimerFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        // TimerService 바인딩
+        Intent intent = new Intent(getActivity(), TimerService.class);
+        requireActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
     public void onStop() {
         super.onStop();
-        // 프래그먼트 종료 시 타이머 중지
-        handler.removeCallbacks(timerRunnable);
+        if (isServiceBound) {
+            requireActivity().unbindService(serviceConnection);
+            isServiceBound = false;
+        }
+    }
+
+
+    private void toggleTimer() {
+        if (isServiceBound) {
+            if (timerService.getElapsedTime() > 0 && pauseButton.getText().equals("일시정지")) {
+                timerService.stopTimer();
+                pauseButton.setText("시작");
+            } else {
+                timerService.startTimer();
+                pauseButton.setText("일시정지");
+            }
+            updateUI();
+        }
+    }
+
+    private void updateUI() {
+        if (isServiceBound) {
+            int elapsedTime = timerService.getElapsedTime();
+            int minutes = elapsedTime / 60;
+            int seconds = elapsedTime % 60;
+            String time = String.format("%02d:%02d", minutes, seconds);
+            timerText.setText(time);
+
+            int progress = (elapsedTime % 3600) * 100 / 3600;
+            circularProgress.setProgress(progress);
+        }
     }
 
     private void saveTimeToPreferences(String time) {
