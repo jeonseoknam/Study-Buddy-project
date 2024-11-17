@@ -60,19 +60,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".TestActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".botton_navigation_Activity"
-            android:exported="false"
-            android:label="@string/title_activity_botton_navigation" />
+
         <activity
             android:name=".ClassChatListActivity"
             android:exported="true">
