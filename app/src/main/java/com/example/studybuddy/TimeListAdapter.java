@@ -1,4 +1,4 @@
-package com.foo.login_register;
+package com.example.studybuddy;
 
 import android.view.LayoutInflater;
 import android.view.View;

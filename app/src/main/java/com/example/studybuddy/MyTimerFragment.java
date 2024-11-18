@@ -31,9 +31,6 @@ import java.util.List;
 
 public class MyTimerFragment extends Fragment {
 
-
-
-
     private TextView timerText;         // 시간 표시 텍스트
     private ProgressBar circularProgress; // 원형 ProgressBar
     private Button deleteButton, pauseButton, registerButton;
@@ -149,8 +146,8 @@ public class MyTimerFragment extends Fragment {
     public void onStart() {
         super.onStart();
         // TimerService 바인딩
-        Intent intent = new Intent(getActivity(), TimerService.class);
-        requireActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+//        Intent intent = new Intent(getActivity(), TimerService.class);
+//        requireActivity().bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override

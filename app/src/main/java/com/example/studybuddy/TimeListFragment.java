@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.studybuddy.R;
-import com.foo.login_register.TimeListAdapter;
+import com.example.studybuddy.TimeListAdapter;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 

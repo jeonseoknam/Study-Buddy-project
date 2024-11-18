@@ -25,14 +25,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // TimerService 시작
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Intent serviceIntent = new Intent(this, TimerService.class);
-            startForegroundService(serviceIntent);
-        } else {
-            Intent serviceIntent = new Intent(this, TimerService.class);
-            startService(serviceIntent);
-        }
+//        // TimerService 시작
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            Intent serviceIntent = new Intent(this, TimerService.class);
+//            startForegroundService(serviceIntent);
+//        } else {
+//            Intent serviceIntent = new Intent(this, TimerService.class);
+//            startService(serviceIntent);
+//        }
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         if (savedInstanceState == null) {
