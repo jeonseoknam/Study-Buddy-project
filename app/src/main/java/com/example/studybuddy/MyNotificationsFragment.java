@@ -1,12 +1,18 @@
 package com.example.studybuddy;
 
+import android.app.Notification;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -14,6 +20,10 @@ import android.view.ViewGroup;
  * create an instance of this fragment.
  */
 public class MyNotificationsFragment extends Fragment {
+
+    private RecyclerView recyclerView;
+    private List<String> notificationList;
+    private NotificationAdapter notificationAdapter;
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -58,7 +68,31 @@ public class MyNotificationsFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        View view = inflater.inflate(R.layout.fragment_my_notifications, container, false);
+
+        recyclerView = view.findViewById(R.id.notificationRecyclerView);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        // 예제 알림 데이터
+        notificationList = new ArrayList<>();
+        notificationList.add("톰 크루즈 님이 목표를 등록했습니다.");
+        notificationList.add("5분 이상 핸드폰을 사용했습니다!");
+        notificationList.add("빌리 아일.. 님이 목표를 인정해주었습니다. 2/3");
+        notificationList.add("알고리즘 기말고사가 15일 남았습니다.");
+
+        notificationAdapter = new NotificationAdapter(notificationList);
+        recyclerView.setAdapter(notificationAdapter);
+
+        return view;
+
+
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_my_notifications, container, false);
+        //return inflater.inflate(R.layout.fragment_my_notifications, container, false);
+    }
+
+    public void addNotification(String newNotification) {
+        notificationList.add(newNotification);
+        notificationAdapter.notifyDataSetChanged();
     }
 }

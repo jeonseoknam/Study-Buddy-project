@@ -47,7 +47,7 @@
 
 
     </RelativeLayout>
-    
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/notificationRecyclerView"
         android:layout_width="match_parent"
