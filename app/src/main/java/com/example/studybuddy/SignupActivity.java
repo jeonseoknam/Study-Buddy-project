@@ -52,6 +52,7 @@ public class SignupActivity extends AppCompatActivity {
         HashMap<String , Object> userdata = new HashMap<>();
         userdata.put("Name", name);
         userdata.put("School", school);
+        userdata.put("Major", "none");
         userdata.put("Nickname", nickname);
         userdata.put("Email", email);
         userdata.put("Password", password);
@@ -67,7 +68,7 @@ public class SignupActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             FirebaseUser user = mAuth.getCurrentUser();
                             userdata.put("UID", user.getUid());
-                            userdata.put("ProfileImage", "none");
+                            userdata.put("ProfileImage", null);
                             db.collection("userInfo").document(user.getUid()).set(userdata);
                             Toast.makeText(this, "회원가입 성공!", Toast.LENGTH_SHORT).show();
 
