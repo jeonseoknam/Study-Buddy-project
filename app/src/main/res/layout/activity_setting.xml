@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <ImageView
+        android:id="@+id/accountImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/baseline_account_circle_24"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="20dp"
+        android:layout_alignBottom="@id/settingMain"/>
+
+
+    <TextView
+        android:id="@+id/settingMain"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="프로필 설정"
+        android:textSize="24dp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_toRightOf="@id/accountImage"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="20dp"/>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/profileChange"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_below="@id/settingMain"
+        android:layout_marginTop="20dp"
+        android:layout_centerHorizontal="true"
+        android:src="@drawable/sample_profile"
+        android:scaleType="centerCrop"
+        android:background="@drawable/sample_profile"
+        android:clipToOutline="true"
+        android:contentDescription="Profile Image"/>
+
+    <TextView
+        android:id="@+id/nameAnnounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/profileChange"
+        android:layout_alignLeft="@id/accountImage"
+        android:layout_marginTop="30dp"
+        android:text="이용자 명"
+        android:textSize="20dp"/>
+
+    <TextView
+        android:id="@+id/nameText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/nameAnnounce"
+        android:layout_alignBaseline="@+id/nameAnnounce"
+        android:text="username"
+        android:textSize="17dp"
+        android:textColor="#858585"
+        android:padding="8dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="20dp"
+        android:paddingStart="15dp"
+        android:background="@drawable/rounded_edittext"/>
+
+    <TextView
+        android:id="@+id/emailAnnounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/nameText"
+        android:layout_alignLeft="@id/accountImage"
+        android:layout_marginTop="20dp"
+        android:text="이메일 "
+        android:textSize="20dp"/>
+
+    <TextView
+        android:id="@+id/emailAdressText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/nameText"
+        android:layout_alignBaseline="@id/emailAnnounce"
+        android:text="email"
+        android:textSize="17dp"
+        android:textColor="#858585"
+        android:inputType="text"
+        android:padding="8dp"
+        android:layout_marginRight="20dp"
+        android:paddingStart="15dp"
+        android:background="@drawable/rounded_edittext"/>
+
+    <TextView
+        android:id="@+id/schoolAnnounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/emailAdressText"
+        android:layout_alignLeft="@id/accountImage"
+        android:layout_marginTop="20dp"
+        android:text="학교명"
+        android:textSize="20dp"/>
+
+    <TextView
+        android:id="@+id/schoolNameText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/schoolAnnounce"
+        android:layout_alignLeft="@+id/nameText"
+        android:text="schoolname"
+        android:textSize="17dp"
+        android:textColor="#858585"
+        android:padding="8dp"
+        android:layout_marginRight="20dp"
+        android:paddingStart="15dp"
+        android:background="@drawable/rounded_edittext"/>
+
+
+    <TextView
+        android:id="@+id/majorAnnounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/schoolNameText"
+        android:layout_alignLeft="@id/nameAnnounce"
+        android:layout_marginTop="20dp"
+        android:text="학과 변경"
+        android:textSize="20dp"/>
+
+    <EditText
+        android:id="@+id/editMajor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/nameText"
+        android:layout_alignBaseline="@+id/majorAnnounce"
+        android:text="major select"
+        android:textColor="#858585"
+        android:textSize="17dp"
+        android:inputType="text"
+        android:padding="8dp"
+        android:layout_marginRight="20dp"
+        android:paddingStart="15dp"
+        android:background="@drawable/rounded_edittext"/>
+
+    <TextView
+        android:id="@+id/nickAnnounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editMajor"
+        android:layout_alignLeft="@id/majorAnnounce"
+        android:layout_marginTop="20dp"
+        android:text="닉네임 변경"
+        android:textSize="20dp"/>
+
+    <EditText
+        android:id="@+id/editNickName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/nameText"
+        android:layout_alignBaseline="@+id/nickAnnounce"
+        android:text="previous nickname"
+        android:textColor="#858585"
+        android:textSize="17dp"
+        android:inputType="text"
+        android:padding="8dp"
+        android:layout_marginRight="20dp"
+        android:paddingStart="15dp"
+        android:background="@drawable/rounded_edittext"/>
+
+    <TextView
+        android:id="@+id/passwordAnnounce"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editNickName"
+        android:layout_alignLeft="@id/majorAnnounce"
+        android:layout_marginTop="20dp"
+        android:text="비밀번호 변경"
+        android:textSize="20dp"/>
+
+    <TextView
+        android:id="@+id/prevPasswordText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/passwordAnnounce"
+        android:layout_alignLeft="@id/passwordAnnounce"
+        android:text="*기존 비밀번호"
+        android:textColor="#B3B3B3"
+        android:layout_marginLeft="15dp"/>
+
+    <EditText
+        android:id="@+id/prevPasswordEdit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/prevPasswordText"
+        android:layout_alignLeft="@id/passwordAnnounce"
+        android:textColor="#858585"
+        android:textColorHint="#858585"
+        android:hint="기존 비밀번호"
+        android:textSize="17dp"
+        android:inputType="textPassword"
+        android:padding="8dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="20dp"
+        android:paddingStart="15dp"
+        android:background="@drawable/rounded_edittext"/>
+    <TextView
+        android:id="@+id/newPasswordText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/prevPasswordEdit"
+        android:layout_alignLeft="@id/passwordAnnounce"
+        android:text="*새로운 비밀번호"
+        android:textColor="#B3B3B3"
+        android:layout_marginTop="3dp"
+        android:layout_marginLeft="15dp"/>
+    <EditText
+        android:id="@+id/newPasswordEdit"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/newPasswordText"
+        android:layout_alignLeft="@id/passwordAnnounce"
+        android:textColor="#858585"
+        android:textColorHint="#858585"
+        android:hint="새로운 비밀번호"
+        android:textSize="17dp"
+        android:inputType="textPassword"
+        android:padding="8dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginRight="20dp"
+        android:paddingStart="15dp"
+        android:background="@drawable/rounded_edittext"/>
+
+    <Button
+        android:id="@+id/btn_finSetting"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/newPasswordEdit"
+        android:layout_centerHorizontal="true"
+        android:text="설정완료"
+        android:layout_marginTop="20dp"
+        android:textSize="20dp"/>
+</RelativeLayout>
