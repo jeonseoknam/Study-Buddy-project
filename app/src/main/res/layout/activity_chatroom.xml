@@ -48,12 +48,12 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chatRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         android:layout_weight="1"
         android:padding="8dp"
         android:scrollbars="vertical"
-        android:clipToPadding="false"
-        tools:listitem="@layout/activity_chat_message"/>
+        android:clipToPadding="false"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -128,7 +128,8 @@
                 android:src="@drawable/baseline_send_24"
                 android:background="?android:attr/selectableItemBackground"
                 android:contentDescription="Send"
-                android:layout_gravity="center_horizontal" />
+                android:layout_gravity="center_horizontal"
+                android:layout_marginLeft="1dp"/>
             </FrameLayout>
 
         </LinearLayout>

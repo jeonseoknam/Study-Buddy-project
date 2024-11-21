@@ -1,51 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="8dp"
-    android:layout_marginBottom="4dp">
+    android:padding="11dp">
 
     <!-- 프로필 사진 -->
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/profileImage"
         android:layout_width="40dp"
         android:layout_height="40dp"
         android:src="@drawable/profile"
         android:contentDescription="Profile Image"
-        android:layout_marginEnd="8dp"
-        android:scaleType="centerCrop"
         android:background="@drawable/rounded_profile_background" />
 
-    <!-- 메시지와 이름을 담는 레이아웃 -->
-    <LinearLayout
-        android:layout_width="0dp"
-        android:layout_weight="1"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
 
         <!-- 이름 -->
-        <TextView
-            android:id="@+id/username"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="사용자 이름"
-            android:textColor="#FFFFFF"
-            android:textStyle="bold"
-            android:textSize="14sp" />
+    <TextView
+        android:id="@+id/username"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="사용자 이름"
+        android:layout_toRightOf="@+id/profileImage"
+        android:layout_marginLeft="8dp"
+        android:textColor="#FFFFFF"
+        android:textStyle="bold"
+        android:textSize="14sp" />
 
         <!-- 메시지 -->
-        <TextView
-            android:id="@+id/messageText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="메시지 내용"
-            android:textColor="#FFFFFF"
-            android:background="@drawable/rounded_message_background"
-            android:padding="10dp"
-            android:layout_marginTop="4dp"
-            android:textSize="16sp" />
-    </LinearLayout>
+    <TextView
+        android:id="@+id/messageText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="메시지 내용"
+        android:maxWidth="250dp"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/rounded_message_background"
+        android:layout_alignLeft="@+id/username"
+        android:layout_below="@+id/username"
+        android:padding="10dp"
+        android:textSize="16sp" />
 
     <!-- 날짜/시간 텍스트 -->
     <TextView
@@ -55,5 +48,8 @@
         android:text="08:43"
         android:textSize="12sp"
         android:textColor="#B0B0B0"
-        android:layout_gravity="end" /> <!-- 오른쪽 정렬 -->
-</LinearLayout>
+        android:layout_toRightOf="@+id/messageText"
+        android:layout_alignBottom="@+id/messageText"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"/> <!-- 오른쪽 정렬 -->
+</RelativeLayout>
