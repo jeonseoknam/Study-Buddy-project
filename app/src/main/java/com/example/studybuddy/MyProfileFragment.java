@@ -96,5 +96,15 @@ public class MyProfileFragment extends Fragment {
                 startActivity(intent);
             }
         });
+
+        Button toGoalButton = view.findViewById(R.id.btn_goalTest);
+        toGoalButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, new GoalBoardFragment())
+                        .commit();
+            }
+        });
     }
 }
