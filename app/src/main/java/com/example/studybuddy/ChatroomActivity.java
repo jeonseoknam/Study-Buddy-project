@@ -39,6 +39,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -47,13 +48,9 @@ public class ChatroomActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-
-    private String chatname = "테스트채팅방";
-
+    private String chatname = "테스트채팅방2";
     private final int MY_CHAT=1, OTHER_CHAT=0;
-
     ChatAdapter adapter;
-
     ArrayList<ChatMessageItem> messageItems = new ArrayList<>();
 
     @Override
@@ -64,6 +61,9 @@ public class ChatroomActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+
+
+        binding.chatTitleText.setText(chatname);
 
         adapter = new ChatAdapter(messageItems);
         binding.chatRecyclerView.setAdapter(adapter);
@@ -80,19 +80,21 @@ public class ChatroomActivity extends AppCompatActivity {
                     }
                     if (value != null && !value.isEmpty()) {
                         DocumentSnapshot snapshot = documentChange.getDocument();
-                        Map<String,Object> msg = snapshot.getData();
-                        String name = msg.get("name").toString();
-                        String message = msg.get("message").toString();
-                        String time = msg.get("time").toString();
-                        String profileUrl = msg.get("profileUrl").toString();
+                        if (snapshot.equals(value.getDocuments().get(0)))
+                            Log.d("logchk", "onEvent: right");
+                        else {
+                            Map<String, Object> msg = snapshot.getData();
+                            String name = msg.get("name").toString();
+                            String message = msg.get("message").toString();
+                            String time = msg.get("time").toString();
+                            String profileUrl = msg.get("profileUrl").toString();
 
-                        ChatMessageItem item = new ChatMessageItem(name, message, time, profileUrl);
+                            ChatMessageItem item = new ChatMessageItem(name, message, time, profileUrl);
 
-                        messageItems.add(item);
-                        adapter.notifyDataSetChanged();
-                        adapter.notifyItemInserted(messageItems.size()-1);
-                        binding.chatRecyclerView.scrollToPosition(messageItems.size()-1);
-
+                            messageItems.add(item);
+                            adapter.notifyItemInserted(messageItems.size() - 1);
+                            binding.chatRecyclerView.scrollToPosition(messageItems.size() - 1);
+                        }
                     } else {
                         Log.d("logchk", "Current data: null");
                     }
@@ -105,12 +107,15 @@ public class ChatroomActivity extends AppCompatActivity {
                 String nickname = userData.userNickname;
                 String message = binding.messageInput.getText().toString();
                 String profileUrl = userData.profileUrl;
-
                 Calendar calendar = Calendar.getInstance();
                 String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+                Object currentTime = System.currentTimeMillis();
+                Map<String, Object> lastTime = new HashMap<>();
+                lastTime.put(chatname, currentTime);
+                chatRef.document("chatSetting").set(lastTime);
+                db.collection("chatRoom").document("singleChat").update(lastTime);
                 ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl);
-
-                chatRef.document("msg" + System.currentTimeMillis()).set(item);
+                chatRef.document("msg" + currentTime).set(item);
                 binding.messageInput.setText("");
 
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
