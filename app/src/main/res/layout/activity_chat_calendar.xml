@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -32,7 +33,7 @@
         android:layout_below="@id/input_schedule"
         android:layout_marginTop="16dp"
         android:layout_centerHorizontal="true"
-        android:text="등록" />
+        android:text="채팅방 일정 등록" />
 
     <!-- "예"와 "아니오" 버튼 (초기에는 숨김) -->
     <LinearLayout
@@ -68,5 +69,5 @@
         android:layout_below="@id/register_button"
         android:layout_marginTop="16dp"
         android:layout_centerHorizontal="true"
-        android:text="일정 보기" />
+        android:text="채팅방 일정 보기" />
 </RelativeLayout>
