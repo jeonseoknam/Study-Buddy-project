@@ -16,6 +16,8 @@ import android.widget.ImageView;
 import com.bumptech.glide.Glide;
 import com.example.studybuddy.databinding.FragmentMyProfileBinding;
 import com.example.studybuddy.utility.userData;
+import com.google.firebase.Firebase;
+import com.google.firebase.auth.FirebaseAuth;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -32,6 +34,8 @@ public class MyProfileFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+
+    private FirebaseAuth mAuth;
 
     public MyProfileFragment() {
         // Required empty public constructor
@@ -83,6 +87,7 @@ public class MyProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
 
         ImageView profile = view.findViewById(R.id.profile_image);
         if (userData.profileUrl != null){
@@ -94,6 +99,15 @@ public class MyProfileFragment extends Fragment {
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), SettingActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        Button logoutbutton = view.findViewById(R.id.btn_logout);
+        logoutbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAuth.signOut();
+                getActivity().finish();
             }
         });
     }
