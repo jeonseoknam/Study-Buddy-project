@@ -13,27 +13,36 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.example.studybuddy.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MyTimerFragment extends Fragment {
 
+    private FirebaseFirestore firestore;
+    private FirebaseAuth firebaseAuth;
+
     private TextView timerText;         // 시간 표시 텍스트
     private ProgressBar circularProgress; // 원형 ProgressBar
-    private Button deleteButton, pauseButton, registerButton;
+    private Button deleteButton, pauseButton, registerButton, rankingButton;
 
     private Handler handler = new Handler(Looper.getMainLooper());
     private int elapsedTime = 0; // 경과 시간 (단위: 초)
@@ -92,6 +101,15 @@ public class MyTimerFragment extends Fragment {
         return fragment;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // Firestore와 FirebaseAuth 초기화
+        firestore = FirebaseFirestore.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @NonNull ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -103,6 +121,8 @@ public class MyTimerFragment extends Fragment {
         deleteButton = view.findViewById(R.id.delete_button);
         pauseButton = view.findViewById(R.id.pause_button);
         registerButton = view.findViewById(R.id.register_button);
+        rankingButton = view.findViewById(R.id.ranking_button);
+
 
         // 초기 타이머 설정
         updateTimer();
@@ -119,11 +139,13 @@ public class MyTimerFragment extends Fragment {
         //등록 버튼
         registerButton.setOnClickListener(v -> {
             String time = timerText.getText().toString();
-            saveTimeToPreferences(time);
-            Toast.makeText(getContext(), "시간이 등록되었습니다!", Toast.LENGTH_SHORT).show();
+            showInputDialog();
 
+        });
 
-            // TimeListFragment로 이동
+        rankingButton.setOnClickListener(v -> {
+            Toast.makeText(getContext(), "나의 공부 기록 페이지로 이동합니다",Toast.LENGTH_SHORT).show();
+
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new TimeListFragment())
                     .addToBackStack(null)
@@ -133,6 +155,50 @@ public class MyTimerFragment extends Fragment {
 
         return view;
     }
+    private void showInputDialog() {
+        // 다이얼로그 레이아웃 설정
+        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_register_time, null);
+        EditText subjectEditText = dialogView.findViewById(R.id.subject_edit_text);
+        EditText memoEditText = dialogView.findViewById(R.id.memo_edit_text);
+
+        new AlertDialog.Builder(requireContext())
+                .setTitle("공부 기록 저장")
+                .setView(dialogView)
+                .setPositiveButton("저장", (dialog, which) -> {
+                    String subjectName = subjectEditText.getText().toString().trim();
+                    String memo = memoEditText.getText().toString().trim();
+
+                    // Firestore에 데이터 저장
+                    saveTimeToFirestore(timerText.getText().toString(), subjectName, memo);
+                })
+                .setNegativeButton("취소", null)
+                .show();
+    }
+
+
+    private void saveTimeToFirestore(String elapsedTime, String subjectName, String memo) {
+        // 현재 사용자 ID 가져오기 (익명 사용자 처리)
+        String userId = firebaseAuth.getCurrentUser() != null ? firebaseAuth.getCurrentUser().getUid() : "anonymous";
+
+        // Firestore에 저장할 데이터 준비
+        Map<String, Object> studySession = new HashMap<>();
+        studySession.put("user_id", userId);
+        studySession.put("elapsed_time", elapsedTime);
+        studySession.put("subject_name", subjectName);
+        studySession.put("memo", memo);
+        studySession.put("timestamp", System.currentTimeMillis());
+
+        // Firestore에 데이터 추가
+        firestore.collection("study_sessions")
+                .add(studySession)
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(getContext(), "공부 기록이 저장되었습니다!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "저장 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
 
     private void updateTimer() {
         // 경과 시간을 분, 초로 변환
@@ -184,7 +250,7 @@ public class MyTimerFragment extends Fragment {
     public void onStop() {
         super.onStop();
         if (isServiceBound) {
-            saveTimerState();
+
             requireActivity().unbindService(serviceConnection);
             isServiceBound = false;
         }
@@ -239,20 +305,7 @@ public class MyTimerFragment extends Fragment {
     }
 
 
-    private void saveTimerState() {
-        if (isServiceBound && timerService != null) {
-            // SharedPreferences 초기화
-            SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("TimerState", Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = sharedPreferences.edit();
 
-            // 타이머 상태 저장
-            editor.putInt("elapsed_time", timerService.getElapsedTime()); // 경과 시간 저장
-            editor.putBoolean("is_running", isRunning); // 타이머 실행 상태 저장
-
-            // SharedPreferences에 적용
-            editor.apply();
-        }
-    }
 
 
 
@@ -270,26 +323,8 @@ public class MyTimerFragment extends Fragment {
         }
     }
 
-    private void saveTimeToPreferences(String time) {
-        SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("TimeData", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
 
-        // 기존 시간 목록 불러오기
-        Gson gson = new Gson();
-        String json = sharedPreferences.getString("time_list", null);
-        List<String> timeList = new ArrayList<>();
-        if (json != null) {
-            Type type = new TypeToken<List<String>>() {}.getType();
-            timeList = gson.fromJson(json, type);
-        }
 
-        // 새 시간 추가
-        timeList.add(time);
 
-        // 다시 저장
-        String updatedJson = gson.toJson(timeList);
-        editor.putString("time_list", updatedJson);
-        editor.apply();
-    }
 
 }

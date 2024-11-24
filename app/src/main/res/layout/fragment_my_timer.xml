@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/rounded_button"
             android:padding="8dp"
-            android:text="랭킹 확인"
+            android:text="기록 화인"
             android:textColor="#FFFFFF" />
     </LinearLayout>
 
