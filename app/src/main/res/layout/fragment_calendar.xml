@@ -57,7 +57,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="등록 취소" />
-
     </LinearLayout>
 
     <!-- "일정 보기" 버튼 -->

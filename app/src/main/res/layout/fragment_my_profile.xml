@@ -30,7 +30,7 @@
         android:layout_toRightOf="@id/accountImage"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="20dp"/>
-    
+
     <ImageView
         android:id="@+id/profile_image"
         android:layout_width="120dp"
@@ -99,6 +99,18 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:text="설정"
+        android:textSize="20sp"/>
+
+    <Button
+        android:id="@+id/btn_goalTest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btn_personalCalender"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:text="(테스트용)목표 게시판 가기"
         android:textSize="20sp"/>
 
 
