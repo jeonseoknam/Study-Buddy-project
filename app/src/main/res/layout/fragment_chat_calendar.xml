@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:padding="16dp">
+
+<!-- 캘린더 뷰 -->
+<CalendarView
+    android:id="@+id/calendar_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:background="#FFFFFF" />
+
+<!-- 일정 입력 -->
+<EditText
+    android:id="@+id/input_schedule"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/calendar_view"
+    android:layout_marginTop="16dp"
+    android:hint="일정을 입력하세요"
+    android:textColorHint="#FFFFFF"
+    android:textColor="#FFFFFF"
+    android:padding="12dp"
+    android:background="@drawable/rounded_edittext" />
+
+<!-- "등록" 버튼 -->
+<Button
+    android:id="@+id/register_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/input_schedule"
+    android:layout_marginTop="16dp"
+    android:layout_centerHorizontal="true"
+    android:text="채팅방 일정 등록" />
+
+<!-- "예"와 "아니오" 버튼 (초기에는 숨김) -->
+<LinearLayout
+    android:id="@+id/confirmation_buttons"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/input_schedule"
+    android:layout_marginTop="16dp"
+    android:layout_centerHorizontal="true"
+    android:visibility="gone"
+    android:orientation="horizontal">
+
+    <Button
+        android:id="@+id/btn_yes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="등록 확정"
+        android:layout_marginEnd="16dp" />
+
+    <Button
+        android:id="@+id/btn_no"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="등록 취소" />
+
+</LinearLayout>
+
+<!-- "일정 보기" 버튼 -->
+<Button
+    android:id="@+id/view_schedule_button"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_below="@id/register_button"
+    android:layout_marginTop="16dp"
+    android:layout_centerHorizontal="true"
+    android:text="채팅방 일정 보기" />
+</RelativeLayout>

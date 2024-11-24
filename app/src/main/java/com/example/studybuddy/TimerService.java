@@ -21,6 +21,7 @@ public class TimerService extends Service {
     private int elapsedTime = 0; // 타이머 시간 (초)
     private boolean isRunning = false;
 
+
     private Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
@@ -42,6 +43,10 @@ public class TimerService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return binder;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
     }
 
     public class TimerBinder extends Binder {
@@ -75,6 +80,7 @@ public class TimerService extends Service {
     @SuppressLint({"MissingPermission", "ForegroundServiceType"})
     private void startForegroundService() {
         String channelId = "timer_channel";
+        String channelName = "타이머 서비스";
 
         // API 26 이상에서 NotificationChannel 생성
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -84,6 +90,7 @@ public class TimerService extends Service {
                     NotificationManager.IMPORTANCE_LOW
             );
 
+            channel.setDescription("타이머가 백그라운드에서 실행 중입니다.");
             NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(channel);
@@ -92,7 +99,7 @@ public class TimerService extends Service {
 
         Notification notification = new NotificationCompat.Builder(this, channelId)
                 .setContentTitle("타이머 실행 중")
-                .setContentText("타이머가 진행 중입니다.")
+                .setContentText("현재 타이머가 실행 중입니다.")
                 .setSmallIcon(R.drawable.ic_timer)
                 .setPriority(NotificationCompat.PRIORITY_LOW) // 낮은 우선순위
                 .build();

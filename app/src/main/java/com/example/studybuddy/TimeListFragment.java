@@ -36,7 +36,8 @@ public class TimeListFragment extends Fragment {
         recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // SharedPreferences에서 시간 목록 불러오기
+        // SharedPreferences에서 시간 목록 불러오기.
+        //시간 말고 다른 정보까지 추가하려면?
         SharedPreferences sharedPreferences = requireActivity().getSharedPreferences("TimeData", Context.MODE_PRIVATE);
         Gson gson = new Gson();
         String json = sharedPreferences.getString("time_list", null);
