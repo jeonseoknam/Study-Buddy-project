@@ -73,6 +73,14 @@ public class MyProfileFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_my_profile, container, false);
 
+        //공부 시간 통계 페이지 프래그먼트를 띄운다
+        Button studytimeButton = view.findViewById(R.id.btn_studyTime);
+        studytimeButton.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, MyStudyTimeFragment.newInstance(mParam1,mParam2))
+                    .addToBackStack(null)
+                    .commit();
+        });
         
         //프로필 프래그먼트에서 캘린더 프래그먼트를 띄웠다. 프래그먼트에서 프래그먼트를 띄우려면 
         //부모 액티비티의 프래그먼트 매니저를 이용한다
