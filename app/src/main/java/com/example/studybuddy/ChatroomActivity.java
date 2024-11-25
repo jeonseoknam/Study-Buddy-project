@@ -1,7 +1,6 @@
 package com.example.studybuddy;
 
 import android.content.Context;
-import android.content.Intent;
 import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -49,7 +48,7 @@ public class ChatroomActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-    private String chatname;
+    private String chatname = "테스트채팅방2";
     private final int MY_CHAT=1, OTHER_CHAT=0;
     ChatAdapter adapter;
     ArrayList<ChatMessageItem> messageItems = new ArrayList<>();
@@ -63,8 +62,6 @@ public class ChatroomActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
 
-        Intent getdataIntent = getIntent();
-        chatname = getdataIntent.getStringExtra("chatname");
 
         binding.chatTitleText.setText(chatname);
 
@@ -97,7 +94,6 @@ public class ChatroomActivity extends AppCompatActivity {
                             messageItems.add(item);
                             adapter.notifyItemInserted(messageItems.size() - 1);
                             binding.chatRecyclerView.scrollToPosition(messageItems.size() - 1);
-                            Log.d("logchk", "onEvent: " + messageItems);
                         }
                     } else {
                         Log.d("logchk", "Current data: null");
@@ -116,6 +112,7 @@ public class ChatroomActivity extends AppCompatActivity {
                 Object currentTime = System.currentTimeMillis();
                 Map<String, Object> lastTime = new HashMap<>();
                 lastTime.put(chatname, currentTime);
+                chatRef.document("chatSetting").set(lastTime);
                 db.collection("chatRoom").document("singleChat").update(lastTime);
                 ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl);
                 chatRef.document("msg" + currentTime).set(item);
@@ -157,6 +154,7 @@ public class ChatroomActivity extends AppCompatActivity {
             holder.time.setText(item.time);
             if (!item.profileUrl.equals("none"))
                 Glide.with(ChatroomActivity.this).load(item.profileUrl).into(holder.profile);
+
         }
 
         @Override

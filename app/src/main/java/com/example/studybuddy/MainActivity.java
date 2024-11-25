@@ -44,16 +44,14 @@ public class MainActivity extends AppCompatActivity {
 
         updateUserData();
 
-
-
-        // TimerService 시작
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            Intent serviceIntent = new Intent(this, TimerService.class);
-            startForegroundService(serviceIntent);
-        } else {
-            Intent serviceIntent = new Intent(this, TimerService.class);
-            startService(serviceIntent);
-        }
+//        // TimerService 시작
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            Intent serviceIntent = new Intent(this, TimerService.class);
+//            startForegroundService(serviceIntent);
+//        } else {
+//            Intent serviceIntent = new Intent(this, TimerService.class);
+//            startService(serviceIntent);
+//        }
 
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
         if (savedInstanceState == null) {
@@ -100,25 +98,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void transferTo(Fragment fragment) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        String tag = fragment.getClass().getSimpleName();
-
-        // 이미 추가된 프래그먼트가 있는지 확인
-        Fragment existingFragment = fragmentManager.findFragmentByTag(tag);
-
-        if (existingFragment != null) {
-            // 기존 프래그먼트를 사용
-            fragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, existingFragment, tag)
-                    .commit();
-        } else {
-            // 새로운 프래그먼트를 추가
-            fragmentManager.beginTransaction()
-                    .replace(R.id.fragment_container, fragment, tag)
-                    .commit();
-        }
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, fragment)
+                .commit();
     }
-
 
     private void updateUserData(){
         FirebaseUser user = mAuth.getCurrentUser();

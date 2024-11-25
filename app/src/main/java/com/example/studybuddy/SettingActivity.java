@@ -89,30 +89,31 @@ public class SettingActivity extends AppCompatActivity {
                     Toast.makeText(SettingActivity.this, "잘못된 닉네임 입력", Toast.LENGTH_SHORT).show();
                 } else if (!prevPassword.equals(userData.userPassword)){
                     Toast.makeText(SettingActivity.this, "기존 비밀번호가 아닙니다.", Toast.LENGTH_SHORT).show();
-                } else if (newPassword.equals(userData.userPassword)) {
+                } else if ((!prevPassword.isEmpty()&&!newPassword.isEmpty())&&
+                        prevPassword.equals(newPassword)) {
                     Toast.makeText(SettingActivity.this, "기존 비밀번호와 동일합니다.", Toast.LENGTH_SHORT).show();
-                } else if (newPassword.isEmpty()){
-                    Toast.makeText(SettingActivity.this, "새로운 비밀번호를 입력하십시오", Toast.LENGTH_SHORT).show();
                 } else {
                     Map<String, Object> data = new HashMap<>();
                     if (!newMajor.equals(userData.userMajor))
                         data.put("Major", newMajor);
                     if (!newNickname.equals(userData.userNickname))
                         data.put("Nickname", newNickname);
-                    data.put("Password", newPassword);
+              //      if (!prevPassword.isEmpty()&&!newPassword.isEmpty())
+              //          data.put("Password", newPassword);
                     db.collection("userInfo").document(mAuth.getCurrentUser().getUid()).update(data);
                     mAuth.getCurrentUser().updatePassword(newPassword).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
                         public void onComplete(@NonNull Task<Void> task) {
                             if (task.isSuccessful()){
                                 Toast.makeText(SettingActivity.this, "프로필 설정 완료", Toast.LENGTH_SHORT).show();
-                                finish();
                             }
                         }
                     });
                 }
             }
         });
+
+
     }
 
     private ActivityResultLauncher<Intent> imageLauncher = registerForActivityResult(
