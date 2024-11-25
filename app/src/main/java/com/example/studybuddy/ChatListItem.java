@@ -1,26 +1,27 @@
 package com.example.studybuddy;
-public class ChatMessageItem {
 
-    String name;
+public class ChatListItem {
+
+    String chatname;
     String message;
     String time;
     String profileUrl;
 
-    public ChatMessageItem(String name, String message, String time, String profileUrl) {
-        this.name = name;
+    public ChatListItem(String chatname, String message, String time, String profileUrl) {
+        this.chatname = chatname;
         this.message = message;
         this.time = time;
         this.profileUrl = profileUrl;
     }
-    public ChatMessageItem() {
+    public ChatListItem() {
     }
 
     public String getName() {
-        return name;
+        return chatname;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setName(String chatname) {
+        this.chatname = chatname;
     }
 
     public String getMessage() {
