@@ -113,6 +113,14 @@ public class GoalDetailsFragment extends Fragment {
             }
 
             if (snapshot != null && snapshot.exists()) {
+                // 기본값을 설정
+                String status = snapshot.getString("status");
+                if (status == null) {
+                    status = "pending"; // 기본값 설정
+                    goalRef.update("status", "pending") // Firestore에도 기본값 저장
+                            .addOnFailureListener(e -> Log.e(TAG, "Failed to update status: " + e.getMessage()));
+                }
+
                 updateUI(snapshot);
             }
         });
@@ -125,33 +133,41 @@ public class GoalDetailsFragment extends Fragment {
         String userId = snapshot.getString("userId");
         String certificationImageUrl = snapshot.getString("certificationImageUrl");
         String certificationDescriptionText = snapshot.getString("certificationDescription");
+        String status = snapshot.getString("status");
 
         goalTitleTextView.setText(title);
         goalDescriptionTextView.setText(description);
         goalDueDateTextView.setText("D-Day: " + dueInDays);
 
-        // 인증 이미지 URL을 사용하여 이미지 로드
         if (certificationImageUrl != null && !certificationImageUrl.isEmpty()) {
             Glide.with(this)
                     .load(certificationImageUrl)
-                    .placeholder(R.drawable.placeholder_image) // 이미지 로드 전 표시할 기본 이미지
+                    .placeholder(R.drawable.placeholder_image)
                     .into(certificationImagePreview);
         } else {
-            certificationImagePreview.setImageResource(R.drawable.placeholder_image); // 기본 이미지 설정
+            certificationImagePreview.setImageResource(R.drawable.placeholder_image);
         }
 
-        // 인증 설명 세팅
         if (certificationDescriptionText != null && !certificationDescriptionText.isEmpty()) {
             certificationDescriptionSet.setText(certificationDescriptionText);
         }
 
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        if (userId != null && userId.equals(currentUserId)) {
-            actionButton.setText("인증하기");
-        } else {
+        if ("certified".equals(status)) {
             actionButton.setText("인정하기");
             actionButton.setOnClickListener(v -> endorseGoal(goalId));
+        } else if ("pending".equals(status) && userId != null && userId.equals(currentUserId)) {
+            actionButton.setText("인증하기");
+            actionButton.setOnClickListener(v -> {
+                if (imageUri != null) {
+                    uploadImageToFirebase();
+                } else {
+                    Toast.makeText(getContext(), "이미지를 먼저 선택해주세요.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            actionButton.setVisibility(View.GONE);
         }
     }
 
@@ -191,6 +207,7 @@ public class GoalDetailsFragment extends Fragment {
 
         Map<String, Object> updateData = new HashMap<>();
         updateData.put("isCertified", true);
+        updateData.put("status", "certified");
         updateData.put("certificationImageUrl", imageUrl);
         updateData.put("certificationDescription", description);
 
@@ -198,9 +215,10 @@ public class GoalDetailsFragment extends Fragment {
                 .update(updateData)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(getContext(), "목표가 인증되었습니다!", Toast.LENGTH_SHORT).show();
+
+                    // 인증 후 현재 Fragment를 닫기
                     if (getActivity() != null) {
-                        getActivity().setResult(Activity.RESULT_OK); // 결과 코드 설정
-                        getActivity().getSupportFragmentManager().popBackStack(); // 현재 화면 종료
+                        getActivity().getSupportFragmentManager().popBackStack();
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -209,9 +227,18 @@ public class GoalDetailsFragment extends Fragment {
     }
 
     private void endorseGoal(String goalId) {
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("endorsedByOthers", true); // 기존 인정 필드
+        updateData.put("status", "approved"); // 상태를 'approved'로 설정
+
         db.collection("Goals").document(goalId)
-                .update("endorsedByOthers", true)
-                .addOnSuccessListener(aVoid -> Toast.makeText(getContext(), "목표가 인정되었습니다!", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e -> Log.e(TAG, "Error endorsing goal: " + e.getMessage()));
+                .update(updateData)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(getContext(), "목표가 인정되었습니다!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Error endorsing goal: " + e.getMessage());
+                });
     }
+
 }
