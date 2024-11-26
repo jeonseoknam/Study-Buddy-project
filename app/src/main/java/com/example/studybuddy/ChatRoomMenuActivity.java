@@ -40,5 +40,17 @@ public class ChatRoomMenuActivity extends AppCompatActivity {
 
             }
         });
+/*
+        Button btn_goalBoard = findViewById(R.id.btn_goalBoard);
+        btn_goalBoard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ChatRoomMenuActivity.this, GoalBoardFragment.class);
+                intent.putExtra("chatRoomId", chatRoomId);  // 현재 채팅방 ID 전달
+                startActivity(intent);
+            }
+        });
+
+ */
     }
 }
