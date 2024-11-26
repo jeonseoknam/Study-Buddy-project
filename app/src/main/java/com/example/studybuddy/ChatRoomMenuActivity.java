@@ -48,8 +48,6 @@ public class ChatRoomMenuActivity extends AppCompatActivity {
                     }
                 });
 
-
-
             }
         });
 

@@ -168,6 +168,7 @@ public class ClassChatListFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
     }
+    public static String chatName;
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
         ImageView profile;
@@ -203,10 +204,10 @@ public class ClassChatListFragment extends Fragment {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(getActivity(), ChatroomActivity.class);
-                    intent.putExtra("chatname", item.chatname);
-                    startActivity(intent);
-                    getActivity().finish();
+                    chatName = item.chatname;
+                    requireActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, new ChatRoomFragment())
+                            .commit();
                 }
             });
         }
