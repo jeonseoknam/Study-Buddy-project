@@ -48,6 +48,7 @@
                 android:layout_weight="1"
                 android:hint="채팅방 검색..."
                 android:textColorHint="#858585"
+                android:textColor="#858585"
                 android:inputType="text"
                 android:padding="12dp"
                 android:layout_marginLeft="20dp"
