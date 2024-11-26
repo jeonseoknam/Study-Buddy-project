@@ -19,7 +19,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.studybuddy.databinding.FragmentClassChatListBinding;
-import com.example.studybuddy.utility.userData;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;

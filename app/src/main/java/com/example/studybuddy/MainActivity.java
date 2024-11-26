@@ -19,7 +19,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.example.studybuddy.utility.userData;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -136,14 +135,6 @@ public class MainActivity extends AppCompatActivity {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Log.d("logchk", "Document exists");
-                        /*
-                        userData.userName = (String) document.getData().get("Name");
-                        userData.userEmail = (String) document.getData().get("Email");
-                        userData.userPassword = (String) document.getData().get("Password");
-                        userData.userSchool = (String) document.getData().get("School");
-                        userData.userMajor = (String) document.getData().get("Major");
-                        userData.userNickname = (String) document.getData().get("Nickname");
-                        userData.profileUrl = (String) document.getData().get("ProfileImage");*/
                         userPref = getSharedPreferences("userData", Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = userPref.edit();
                         editor.putString("Name", (String) document.getData().get("Name"));
@@ -155,7 +146,6 @@ public class MainActivity extends AppCompatActivity {
                         editor.putString("Profile", (String)document.getData().get("ProfileImage"));
                         editor.apply();
 
-                        Log.d("logchk", "onComplete: " + userPref.getString("Profile",null));
                     } else {
                         Log.d("logchk", "No such document");
                     }
