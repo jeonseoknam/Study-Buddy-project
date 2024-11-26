@@ -18,7 +18,6 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.studybuddy.databinding.FragmentMyProfileBinding;
-import com.example.studybuddy.utility.userData;
 import com.google.firebase.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 

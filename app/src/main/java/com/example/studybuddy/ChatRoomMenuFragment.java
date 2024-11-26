@@ -1,11 +1,14 @@
 package com.example.studybuddy;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,6 +18,7 @@ import androidx.fragment.app.Fragment;
 public class ChatRoomMenuFragment extends Fragment {
 
     private String chatID;
+    private SharedPreferences chatNamePref;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -25,8 +29,8 @@ public class ChatRoomMenuFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat_room_menu,container,false);
-
-        chatID = ClassChatListFragment.chatName;
+        chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
+        chatID = chatNamePref.getString("Name", "none");
 
         return view;
 
@@ -35,6 +39,16 @@ public class ChatRoomMenuFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        ImageButton backbutton = view.findViewById(R.id.btn_backButton);
+        backbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                getParentFragmentManager().beginTransaction()
+                        .remove(ChatRoomMenuFragment.this)
+                        .commit();
+            }
+        });
 
         TextView chatTitle = view.findViewById(R.id.chatTitleText);
         chatTitle.setText(chatID);

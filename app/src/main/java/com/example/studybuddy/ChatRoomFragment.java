@@ -45,7 +45,7 @@ public class ChatRoomFragment extends Fragment {
     private String chatname;
     private String testname;
 
-    private SharedPreferences userPref;
+    private SharedPreferences userPref, chatNamePref;
     private final int MY_CHAT=1, OTHER_CHAT=0;
     ChatAdapter adapter;
     ArrayList<ChatMessageItem> messageItems = new ArrayList<>();
@@ -60,9 +60,10 @@ public class ChatRoomFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat_room, container, false);
         TextView chatTitle = view.findViewById(R.id.chatTitleText);
+        chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
 
-        chatname = ClassChatListFragment.chatName;
-        Log.d("logchk", "onCreateView: "+ ClassChatListFragment.chatName);
+        chatname = chatNamePref.getString("Name","none");
+        Log.d("logchk", "onCreateView: "+ chatname);
         chatTitle.setText(chatname);
 
         return view;
@@ -92,21 +93,18 @@ public class ChatRoomFragment extends Fragment {
                     }
                     if (value != null && !value.isEmpty()) {
                         DocumentSnapshot snapshot = documentChange.getDocument();
-                        if (snapshot.equals(value.getDocuments().get(0)))
-                            Log.d("logchk", "onEvent: right");
-                        else {
-                            Map<String, Object> msg = snapshot.getData();
-                            String name = msg.get("name").toString();
-                            String message = msg.get("message").toString();
-                            String time = msg.get("time").toString();
-                            String profileUrl = msg.get("profileUrl").toString();
+                        Map<String, Object> msg = snapshot.getData();
+                        String name = msg.get("name").toString();
+                        String message = msg.get("message").toString();
+                        String time = msg.get("time").toString();
+                        String profileUrl = msg.get("profileUrl").toString();
 
-                            ChatMessageItem item = new ChatMessageItem(name, message, time, profileUrl);
+                        ChatMessageItem item = new ChatMessageItem(name, message, time, profileUrl);
 
-                            messageItems.add(item);
-                            adapter.notifyItemInserted(messageItems.size() - 1);
-                            recyclerView.scrollToPosition(messageItems.size() - 1);
-                        }
+                        messageItems.add(item);
+                        adapter.notifyItemInserted(messageItems.size() - 1);
+                        recyclerView.scrollToPosition(messageItems.size() - 1);
+
                     } else {
                         Log.d("logchk", "Current data: null");
                     }

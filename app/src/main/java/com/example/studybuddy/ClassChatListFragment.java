@@ -1,6 +1,8 @@
 package com.example.studybuddy;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -21,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.example.studybuddy.databinding.FragmentClassChatListBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.AggregateQuerySnapshot;
 import com.google.firebase.firestore.AggregateSource;
@@ -67,7 +70,7 @@ public class ClassChatListFragment extends Fragment {
 
     ChatListAdapter adapter;
 
-    FragmentClassChatListBinding binding;
+    private SharedPreferences chatNamePref;
 
     ArrayList<ChatListItem> chatListItems = new ArrayList<>();
 
@@ -117,6 +120,7 @@ public class ClassChatListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 
         RecyclerView recyclerView = view.findViewById(R.id.chatListRecyclerView);
+        chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
 
         adapter = new ChatListAdapter(chatListItems);
         recyclerView.setAdapter(adapter);
@@ -164,10 +168,19 @@ public class ClassChatListFragment extends Fragment {
             }
         });
 
+        FloatingActionButton addChatButton = view.findViewById(R.id.addChatButton);
+        addChatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requireActivity().getSupportFragmentManager().beginTransaction()
+                        .add(R.id.fragment_container, CreateChatFragment.newInstance("param1","param2"))
+                        .commit();
+            }
+        });
+
         super.onViewCreated(view, savedInstanceState);
 
     }
-    public static String chatName;
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
         ImageView profile;
@@ -203,7 +216,9 @@ public class ClassChatListFragment extends Fragment {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    chatName = item.chatname;
+                    SharedPreferences.Editor editor = chatNamePref.edit();
+                    editor.putString("Name", item.chatname);
+                    editor.apply();
                     requireActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.fragment_container, new ChatRoomFragment())
                             .commit();
