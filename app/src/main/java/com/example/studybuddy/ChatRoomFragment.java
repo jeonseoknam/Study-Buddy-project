@@ -3,6 +3,7 @@ package com.example.studybuddy;
 import static androidx.core.content.ContextCompat.getSystemService;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -45,6 +46,7 @@ public class ChatRoomFragment extends Fragment {
     private String chatname;
     private String testname;
 
+    private SharedPreferences userPref;
     private final int MY_CHAT=1, OTHER_CHAT=0;
     ChatAdapter adapter;
     ArrayList<ChatMessageItem> messageItems = new ArrayList<>();
@@ -73,6 +75,7 @@ public class ChatRoomFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         db = FirebaseFirestore.getInstance();
+        userPref = getContext().getSharedPreferences("userData", Context.MODE_PRIVATE);
 
         RecyclerView recyclerView = view.findViewById(R.id.chatRecyclerView);
         adapter = new ChatAdapter(messageItems);
@@ -116,11 +119,11 @@ public class ChatRoomFragment extends Fragment {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String nickname = userData.userNickname;
+                String nickname = userPref.getString("Nickname","none");
                 EditText messageInput = view.findViewById(R.id.messageInput);
                 String message = messageInput.getText().toString();
                 if (!message.isEmpty()){
-                    ;String profileUrl = userData.profileUrl;
+                    String profileUrl = userPref.getString("Profile",null);
                     Calendar calendar = Calendar.getInstance();
                     String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
                     Object currentTime = System.currentTimeMillis();
@@ -184,7 +187,7 @@ public class ChatRoomFragment extends Fragment {
 
         @Override
         public int getItemViewType(int position) {
-            if (messageItems.get(position).name.equals(userData.userNickname)){
+            if (messageItems.get(position).name.equals(userPref.getString("Nickname","none"))){
                 return  MY_CHAT;
             }else { return OTHER_CHAT; }
         }

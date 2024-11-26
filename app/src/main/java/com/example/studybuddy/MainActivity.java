@@ -1,9 +1,12 @@
 package com.example.studybuddy;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContentInfo;
 import android.view.MenuItem;
 import android.view.View;
 
@@ -34,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
+    private SharedPreferences userPref;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
 
         updateUserData();
 
+        userPref = getSharedPreferences("userData", Context.MODE_PRIVATE);
 
 
         // TimerService 시작
@@ -130,13 +136,26 @@ public class MainActivity extends AppCompatActivity {
                     DocumentSnapshot document = task.getResult();
                     if (document.exists()) {
                         Log.d("logchk", "Document exists");
+                        /*
                         userData.userName = (String) document.getData().get("Name");
                         userData.userEmail = (String) document.getData().get("Email");
                         userData.userPassword = (String) document.getData().get("Password");
                         userData.userSchool = (String) document.getData().get("School");
                         userData.userMajor = (String) document.getData().get("Major");
                         userData.userNickname = (String) document.getData().get("Nickname");
-                        userData.profileUrl = (String) document.getData().get("ProfileImage");
+                        userData.profileUrl = (String) document.getData().get("ProfileImage");*/
+                        userPref = getSharedPreferences("userData", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = userPref.edit();
+                        editor.putString("Name", (String) document.getData().get("Name"));
+                        editor.putString("Email", (String)document.getData().get("Email"));
+                        editor.putString("Password", (String)document.getData().get("Password"));
+                        editor.putString("School", (String)document.getData().get("School"));
+                        editor.putString("Major", (String)document.getData().get("Major"));
+                        editor.putString("Nickname", (String)document.getData().get("Nickname"));
+                        editor.putString("Profile", (String)document.getData().get("ProfileImage"));
+                        editor.apply();
+
+                        Log.d("logchk", "onComplete: " + userPref.getString("Profile",null));
                     } else {
                         Log.d("logchk", "No such document");
                     }

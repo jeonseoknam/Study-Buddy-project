@@ -2,6 +2,7 @@ package com.example.studybuddy;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.hardware.input.InputManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -52,6 +53,7 @@ public class ChatroomActivity extends AppCompatActivity {
     private String chatname;
     private final int MY_CHAT=1, OTHER_CHAT=0;
     ChatAdapter adapter;
+    private SharedPreferences userPref = getSharedPreferences("userData", Context.MODE_PRIVATE);
     ArrayList<ChatMessageItem> messageItems = new ArrayList<>();
 
     @Override
@@ -108,9 +110,9 @@ public class ChatroomActivity extends AppCompatActivity {
         binding.btnSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String nickname = userData.userNickname;
+                String nickname = userPref.getString("Nickname", "none");
                 String message = binding.messageInput.getText().toString();
-                String profileUrl = userData.profileUrl;
+                String profileUrl = userPref.getString("Profile", null);
                 Calendar calendar = Calendar.getInstance();
                 String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
                 Object currentTime = System.currentTimeMillis();
@@ -170,7 +172,7 @@ public class ChatroomActivity extends AppCompatActivity {
 
         @Override
         public int getItemViewType(int position) {
-            if (messageItems.get(position).name.equals(userData.userNickname)){
+            if (messageItems.get(position).name.equals(userPref.getString("Nickname","none"))){
                 return  MY_CHAT;
             }else { return OTHER_CHAT; }
         }
