@@ -125,6 +125,15 @@ public class ChatroomActivity extends AppCompatActivity {
                 imm.hideSoftInputFromWindow(getCurrentFocus().getWindowToken(), 0);
             }
         });
+
+        binding.btnChatMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(ChatroomActivity.this, ChatRoomMenuActivity.class);
+                intent.putExtra("chatname", chatname);
+                startActivity(intent);
+            }
+        });
     }
 
     private class MyViewHolder extends RecyclerView.ViewHolder{
