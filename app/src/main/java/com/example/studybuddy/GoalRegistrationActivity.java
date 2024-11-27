@@ -84,9 +84,18 @@ public class GoalRegistrationActivity extends AppCompatActivity {
         datePickerDialog.show();
     }
 
+
     private void saveGoalToFirestore(String title, String description, long dueInDays) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String chatRoomId = getIntent().getStringExtra("chatRoomId"); // Intent로 전달받은 chatRoomId
+
+        if (chatRoomId == null || chatRoomId.isEmpty()) {
+            Log.e("logchk", "ChatRoomId is null or empty. Goal cannot be saved.");
+            Toast.makeText(this, "ChatRoomId가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Map<String, Object> goalData = new HashMap<>();
         goalData.put("title", title);
         goalData.put("description", description);
@@ -94,12 +103,33 @@ public class GoalRegistrationActivity extends AppCompatActivity {
         goalData.put("isCertified", false);
         goalData.put("userId", userId);
 
-        db.collection("Goals").add(goalData)
+        // chatRoomId 기반 경로로 데이터 저장
+        db.collection("Goals").document(chatRoomId).collection("goals")
+                .add(goalData)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(this, "목표가 등록되었습니다!", Toast.LENGTH_SHORT).show();
                     setResult(RESULT_OK);
-                    finish();
+                    finish(); // Activity 종료
                 })
                 .addOnFailureListener(e -> Log.e("logchk", "Error Adding Goal: " + e.getMessage()));
     }
+
+//    private void saveGoalToFirestore(String title, String description, long dueInDays) {
+//        FirebaseFirestore db = FirebaseFirestore.getInstance();
+//        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//        Map<String, Object> goalData = new HashMap<>();
+//        goalData.put("title", title);
+//        goalData.put("description", description);
+//        goalData.put("dueInDays", dueInDays);
+//        goalData.put("isCertified", false);
+//        goalData.put("userId", userId);
+//
+//        db.collection("Goals").add(goalData)
+//                .addOnSuccessListener(documentReference -> {
+//                    Toast.makeText(this, "목표가 등록되었습니다!", Toast.LENGTH_SHORT).show();
+//                    setResult(RESULT_OK);
+//                    finish();
+//                })
+//                .addOnFailureListener(e -> Log.e("logchk", "Error Adding Goal: " + e.getMessage()));
+//    }
 }

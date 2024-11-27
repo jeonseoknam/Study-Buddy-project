@@ -23,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.FirebaseStorage;
@@ -49,6 +50,7 @@ public class GoalDetailsFragment extends Fragment {
     private ImageView certificationImagePreview;
     private EditText certificationDescription;
 
+    private TextView chatTitleTextView;
     private TextView certificationDescriptionSet;
     private Uri imageUri;
 
@@ -61,6 +63,12 @@ public class GoalDetailsFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
 
         // UI 요소 초기화
+
+        chatTitleTextView = view.findViewById(R.id.chatRoomNameText);
+        String chatRoomId = getArguments().getString("chatRoomId");
+        chatTitleTextView.setText(chatRoomId);
+
+
         goalTitleTextView = view.findViewById(R.id.goalDetailsTitle);
         goalDescriptionTextView = view.findViewById(R.id.goalDetailsDescription);
         goalDueDateTextView = view.findViewById(R.id.goalDetailsDueDate);
@@ -105,7 +113,20 @@ public class GoalDetailsFragment extends Fragment {
     }
 
     private void loadGoalDetails(String goalId) {
-        DocumentReference goalRef = db.collection("Goals").document(goalId);
+        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
+
+        if (chatRoomId == null || chatRoomId.isEmpty()) {
+            Log.e(TAG, "ChatRoomId is missing!");
+            Toast.makeText(getContext(), "ChatRoomId가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Firestore 경로에 chatRoomId를 포함
+        DocumentReference goalRef = db.collection("Goals")
+                .document(chatRoomId)
+                .collection("goals")
+                .document(goalId);
+
         goalListener = goalRef.addSnapshotListener((snapshot, error) -> {
             if (error != null) {
                 Log.e(TAG, "Error fetching goal details: " + error.getMessage());
@@ -113,7 +134,7 @@ public class GoalDetailsFragment extends Fragment {
             }
 
             if (snapshot != null && snapshot.exists()) {
-                // 기본값을 설정
+                // 기본값 설정
                 String status = snapshot.getString("status");
                 if (status == null) {
                     status = "pending"; // 기본값 설정
@@ -125,7 +146,6 @@ public class GoalDetailsFragment extends Fragment {
             }
         });
     }
-
     private void updateUI(DocumentSnapshot snapshot) {
         String title = snapshot.getString("title");
         String description = snapshot.getString("description");
@@ -154,22 +174,38 @@ public class GoalDetailsFragment extends Fragment {
 
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        if ("certified".equals(status)) {
+        // 버튼 로직
+        if (userId != null && userId.equals(currentUserId)) {
+            // 본인: 인증 버튼만 표시
+            if ("pending".equals(status)) {
+                actionButton.setText("인증하기");
+                actionButton.setOnClickListener(v -> {
+                    if (imageUri != null) {
+                        uploadImageToFirebase();
+                    } else {
+                        Toast.makeText(getContext(), "이미지를 먼저 선택해주세요.", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } else {
+                // 본인은 인증 후 버튼 숨김
+                actionButton.setVisibility(View.GONE);
+            }
+        } else {
+            // 타인: 인정 버튼만 표시
             actionButton.setText("인정하기");
-            actionButton.setOnClickListener(v -> endorseGoal(goalId));
-        } else if ("pending".equals(status) && userId != null && userId.equals(currentUserId)) {
-            actionButton.setText("인증하기");
+
+            // 인증 상태에 따라 버튼 동작 설정
             actionButton.setOnClickListener(v -> {
-                if (imageUri != null) {
-                    uploadImageToFirebase();
-                } else {
-                    Toast.makeText(getContext(), "이미지를 먼저 선택해주세요.", Toast.LENGTH_SHORT).show();
+                if ("pending".equals(status)) {
+                    Toast.makeText(getContext(), "아직 인증이 되지 않았습니다!", Toast.LENGTH_SHORT).show();
+                } else if ("certified".equals(status)) {
+                    endorseGoal(goalId); // 목표 인정 로직 호출
                 }
             });
-        } else {
-            actionButton.setVisibility(View.GONE);
         }
     }
+
+
 
     private void openFileChooser() {
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -204,6 +240,13 @@ public class GoalDetailsFragment extends Fragment {
 
     private void saveCertificationToFirestore(String imageUrl) {
         String description = certificationDescription.getText().toString();
+        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
+
+        if (chatRoomId == null || chatRoomId.isEmpty()) {
+            Log.e(TAG, "ChatRoomId is missing!");
+            Toast.makeText(getContext(), "ChatRoomId가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         Map<String, Object> updateData = new HashMap<>();
         updateData.put("isCertified", true);
@@ -211,7 +254,7 @@ public class GoalDetailsFragment extends Fragment {
         updateData.put("certificationImageUrl", imageUrl);
         updateData.put("certificationDescription", description);
 
-        db.collection("Goals").document(goalId)
+        db.collection("Goals").document(chatRoomId).collection("goals").document(goalId)
                 .update(updateData)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(getContext(), "목표가 인증되었습니다!", Toast.LENGTH_SHORT).show();
@@ -227,18 +270,74 @@ public class GoalDetailsFragment extends Fragment {
     }
 
     private void endorseGoal(String goalId) {
+        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
+
+        if (chatRoomId == null || chatRoomId.isEmpty()) {
+            Log.e("logchk", "ChatRoomId is missing!");
+            Toast.makeText(getContext(), "ChatRoomId가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Map<String, Object> updateData = new HashMap<>();
         updateData.put("endorsedByOthers", true); // 기존 인정 필드
         updateData.put("status", "approved"); // 상태를 'approved'로 설정
 
-        db.collection("Goals").document(goalId)
-                .update(updateData)
+        // Firestore 경로
+        DocumentReference goalRef = db.collection("Goals")
+                .document(chatRoomId)
+                .collection("goals")
+                .document(goalId);
+
+        // `goalLikes` 필드 증가
+        goalRef.update(updateData) // 기존 필드 업데이트
                 .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(getContext(), "목표가 인정되었습니다!", Toast.LENGTH_SHORT).show();
+                    // goalLikes 증가
+                    goalRef.update("goalLikes", FieldValue.increment(1))
+                            .addOnSuccessListener(aVoid1 -> {
+                                Toast.makeText(getContext(), "목표가 인정되었습니다!", Toast.LENGTH_SHORT).show();
+
+                                // 창 닫기
+                                if (getActivity() != null) {
+                                    getActivity().getSupportFragmentManager().popBackStack();
+                                }
+                            })
+                            .addOnFailureListener(e -> Log.e("logchk", "Error incrementing goalLikes: " + e.getMessage()));
                 })
-                .addOnFailureListener(e -> {
-                    Log.e(TAG, "Error endorsing goal: " + e.getMessage());
-                });
+                .addOnFailureListener(e -> Log.e("logchk", "Error endorsing goal: " + e.getMessage()));
     }
+
+
+//    private void endorseGoal(String goalId) {
+//        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
+//
+//        if (chatRoomId == null || chatRoomId.isEmpty()) {
+//            Log.e(TAG, "ChatRoomId is missing!");
+//            Toast.makeText(getContext(), "ChatRoomId가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        Map<String, Object> updateData = new HashMap<>();
+//        updateData.put("endorsedByOthers", true); // 기존 인정 필드
+//        updateData.put("status", "approved"); // 상태를 'approved'로 설정
+//
+//        db.collection("Goals").document(chatRoomId).collection("goals").document(goalId)
+//                .update(updateData)
+//                .addOnSuccessListener(aVoid -> {
+//                    Toast.makeText(getContext(), "목표가 인정되었습니다!", Toast.LENGTH_SHORT).show();
+//
+//                    // 승인 완료 후 창 닫기
+//                    if (getActivity() != null) {
+//                        getActivity().getSupportFragmentManager().popBackStack();
+//                    }
+//                })
+//                .addOnFailureListener(e -> {
+//                    Log.e(TAG, "Error endorsing goal: " + e.getMessage());
+//                });
+//    }
+
+
+
+
+
 
 }

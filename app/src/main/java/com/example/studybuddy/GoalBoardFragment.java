@@ -15,11 +15,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
 import android.widget.AdapterView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.example.studybuddy.GoalRegistrationActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
@@ -36,13 +39,18 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class GoalBoardFragment extends Fragment {
 
     private static final String TAG = "GoalBoardFragment";
     private static final String PREFS_NAME = "com.example.studybuddy.GoalPrefs";
     private static final String GOAL_LIST_KEY = "goal_list";
+
+    private TextView goalBoardTitle;
 
     private RecyclerView recyclerViewGoals;
     private GoalAdapter goalAdapter;
@@ -64,11 +72,18 @@ public class GoalBoardFragment extends Fragment {
         // SharedPreferences 설정
         sharedPreferences = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
+
+
         // Firebase Firestore 초기화
         db = FirebaseFirestore.getInstance();
 
+
+
         // 목표 리스트 초기화
         originalGoalList = new ArrayList<>();
+        String chatRoomId = getArguments().getString("chatRoomId");
+        goalBoardTitle = view.findViewById(R.id.chatRoomNameText);
+        goalBoardTitle.setText(chatRoomId);
 
         // RecyclerView 설정
         recyclerViewGoals = view.findViewById(R.id.recyclerViewGoals);
@@ -122,22 +137,34 @@ public class GoalBoardFragment extends Fragment {
         });
 
         // FloatingActionButton 설정 (목표 추가)
+
         addGoalButton = view.findViewById(R.id.addGoalButton);
         addGoalButton.setOnClickListener(v -> {
+            // 현재 chatRoomId를 가져온다
+
+
+            // Intent에 chatRoomId를 담아서 Activity로 전달
             Intent intent = new Intent(getActivity(), GoalRegistrationActivity.class);
+            intent.putExtra("chatRoomId", chatRoomId); // chatRoomId 전달
             startActivityForResult(intent, 1001);
         });
 
         // Firebase에서 목표 불러오기
+        refreshGoals();
         loadGoalsFromFirebase();
 
         return view;
     }
 
+
+
+
+
     @Override
     public void onResume() {
         super.onResume();
         loadGoalsFromFirebase(); // Firebase에서 목표 리스트를 다시 불러옵니다.
+        refreshGoals();
     }
 
     @Override
@@ -145,6 +172,7 @@ public class GoalBoardFragment extends Fragment {
         super.onPause();
         saveGoalsToPreferences();
     }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -155,11 +183,26 @@ public class GoalBoardFragment extends Fragment {
         }
     }
 
+    public void refreshGoals() {
+        Log.d(TAG, "Refreshing goals with current filter: " + currentFilter);
+        loadGoalsFromFirebase(); // Firestore에서 목표 리스트를 다시 불러옵니다.
+    }
+
     // 목표 상세 정보 화면으로 이동하는 메소드
     private void openGoalDetailsFragment(String goalId) {
         if (getActivity() != null && goalId != null) {
+            String chatRoomId = getArguments().getString("chatRoomId"); // 현재 Fragment의 chatRoomId 가져오기
+
+            if (chatRoomId == null || chatRoomId.isEmpty()) {
+                Log.e("logchk", "ChatRoomId is missing!");
+                Toast.makeText(getContext(), "ChatRoomId가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             Bundle bundle = new Bundle();
             bundle.putString("goalId", goalId);
+            bundle.putString("chatRoomId", chatRoomId); // chatRoomId 전달
+
             GoalDetailsFragment goalDetailsFragment = new GoalDetailsFragment();
             goalDetailsFragment.setArguments(bundle);
 
@@ -170,35 +213,53 @@ public class GoalBoardFragment extends Fragment {
         }
     }
 
-    // Firebase에서 목표 리스트를 불러오는 메소드
     private void loadGoalsFromFirebase() {
-        CollectionReference goalsRef = db.collection("Goals");
+        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
+        CollectionReference goalsRef = db.collection("Goals").document(chatRoomId).collection("goals");
+        CollectionReference userInfoRef = db.collection("userInfo"); // userInfo 컬렉션 참조
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        goalsRef.addSnapshotListener((value, error) -> {
-            if (error != null) {
-                Log.e(TAG, "Listen failed: " + error);
-                return;
+        // 닉네임 캐시를 위한 맵
+        Map<String, String> userNicknameMap = new HashMap<>();
+
+        // userInfo 컬렉션에서 닉네임 미리 로드
+        userInfoRef.get().addOnSuccessListener(userSnapshot -> {
+            for (QueryDocumentSnapshot userDoc : userSnapshot) {
+                String userId = userDoc.getId();
+                String nickName = userDoc.getString("Nickname");
+                userNicknameMap.put(userId, nickName != null ? nickName : "Unknown User");
             }
 
-            if (value != null) {
+            // Goals 데이터를 로드
+            goalsRef.get().addOnSuccessListener(goalSnapshot -> {
                 originalGoalList.clear();
 
-                for (QueryDocumentSnapshot doc : value) {
+                for (QueryDocumentSnapshot doc : goalSnapshot) {
                     String id = doc.getId();
                     String title = doc.getString("title");
                     int dueInDays = doc.getLong("dueInDays") != null ? doc.getLong("dueInDays").intValue() : 0;
                     int likes = doc.getLong("likes") != null ? doc.getLong("likes").intValue() : 0;
                     int goalLikes = doc.getLong("goalLikes") != null ? doc.getLong("goalLikes").intValue() : 0;
-                    String status = doc.getString("status");
                     String userId = doc.getString("userId");
-
-                    if (status == null) status = "pending";
-
+                    String status = doc.getString("status") != null ? doc.getString("status") : "pending";
                     String certificationImageUrl = doc.getString("certificationImageUrl");
                     String certificationDescription = doc.getString("certificationDescription");
 
-                    Goal goal = new Goal(id, title, dueInDays, likes, goalLikes, status, certificationImageUrl, certificationDescription);
+                    // 닉네임 캐시에서 가져오기
+                    String nickName = userNicknameMap.getOrDefault(userId, "Unknown User");
+
+                    // Goal 객체 생성
+                    Goal goal = new Goal(
+                            id,
+                            title,
+                            dueInDays,
+                            likes,
+                            goalLikes,
+                            status,
+                            certificationImageUrl,
+                            certificationDescription,
+                            nickName
+                    );
 
                     // 탭에 따른 목표 필터링 (나의 목표 / 스터디 메이트의 목표)
                     if ((currentTab.equals("나의 목표") && currentUserId.equals(userId)) ||
@@ -207,13 +268,129 @@ public class GoalBoardFragment extends Fragment {
                     }
                 }
 
-                // 필터 적용
+                // 모든 데이터를 정렬 및 필터링 후 RecyclerView 갱신
+                sortGoalsByDueDate();
                 filterGoals(currentFilter);
-            }
-        });
+            }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch goals", e));
+        }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch user info", e));
     }
 
-    // 필터링 로직을 적용하는 메소드
+//    private void loadGoalsFromFirebase() {
+//        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
+//        CollectionReference goalsRef = db.collection("Goals").document(chatRoomId).collection("goals");
+//        CollectionReference userInfoRef = db.collection("userInfo"); // userInfo 컬렉션 참조
+//        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//
+//        goalsRef.addSnapshotListener((value, error) -> {
+//            if (error != null) {
+//                Log.e(TAG, "Listen failed: " + error);
+//                return;
+//            }
+//
+//            if (value != null) {
+//                originalGoalList.clear();
+//
+//                for (QueryDocumentSnapshot doc : value) {
+//                    String id = doc.getId();
+//                    String title = doc.getString("title");
+//                    int dueInDays = doc.getLong("dueInDays") != null ? doc.getLong("dueInDays").intValue() : 0;
+//                    int likes = doc.getLong("likes") != null ? doc.getLong("likes").intValue() : 0;
+//                    int goalLikes = doc.getLong("goalLikes") != null ? doc.getLong("goalLikes").intValue() : 0;
+//                    String userId = doc.getString("userId");
+//
+//                    // status 값을 바로 계산
+//                    String status = doc.getString("status") != null ? doc.getString("status") : "pending";
+//
+//                    String certificationImageUrl = doc.getString("certificationImageUrl");
+//                    String certificationDescription = doc.getString("certificationDescription");
+//
+//                    // userId를 기반으로 userInfo에서 닉네임 쿼리
+//                    userInfoRef.document(userId).get().addOnSuccessListener(userDoc -> {
+//                        String nickName = userDoc.getString("Nickname"); // 닉네임 가져오기
+//
+//                        // Goal 객체 생성
+//                        Goal goal = new Goal(
+//                                id,
+//                                title,
+//                                dueInDays,
+//                                likes,
+//                                goalLikes,
+//                                status, // 바로 계산된 status 값 전달
+//                                certificationImageUrl,
+//                                certificationDescription,
+//                                nickName
+//                        );
+//
+//                        // 탭에 따른 목표 필터링 (나의 목표 / 스터디 메이트의 목표)
+//                        if ((currentTab.equals("나의 목표") && currentUserId.equals(userId)) ||
+//                                (currentTab.equals("스터디 메이트의 목표") && !currentUserId.equals(userId))) {
+//                            originalGoalList.add(goal);
+//                        }
+//
+//                        // 모든 데이터를 정렬 및 필터링 후 RecyclerView 갱신
+//                        sortGoalsByDueDate();
+//                        filterGoals(currentFilter);
+//                    }).addOnFailureListener(e -> {
+//                        Log.e(TAG, "Failed to fetch user info for userId: " + userId, e);
+//                    });
+//                }
+//            }
+//        });
+//    }
+
+
+//    private void loadGoalsFromFirebase() {
+//        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
+//        CollectionReference goalsRef = db.collection("Goals").document(chatRoomId).collection("goals");
+//        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+//
+//        goalsRef.addSnapshotListener((value, error) -> {
+//            if (error != null) {
+//                Log.e(TAG, "Listen failed: " + error);
+//                return;
+//            }
+//
+//            if (value != null) {
+//                originalGoalList.clear();
+//
+//                for (QueryDocumentSnapshot doc : value) {
+//                    String id = doc.getId();
+//                    String title = doc.getString("title");
+//                    int dueInDays = doc.getLong("dueInDays") != null ? doc.getLong("dueInDays").intValue() : 0;
+//                    int likes = doc.getLong("likes") != null ? doc.getLong("likes").intValue() : 0;
+//                    int goalLikes = doc.getLong("goalLikes") != null ? doc.getLong("goalLikes").intValue() : 0;
+//                    String status = doc.getString("status");
+//                    String userId = doc.getString("userId");
+//                    String nickName = doc.getString("Nickname");
+//
+//                    if (status == null) status = "pending";
+//
+//                    String certificationImageUrl = doc.getString("certificationImageUrl");
+//                    String certificationDescription = doc.getString("certificationDescription");
+//
+//                    Goal goal = new Goal(id, title, dueInDays, likes, goalLikes, status, certificationImageUrl, certificationDescription, nickName);
+//
+//                    // 탭에 따른 목표 필터링 (나의 목표 / 스터디 메이트의 목표)
+//                    if ((currentTab.equals("나의 목표") && currentUserId.equals(userId)) ||
+//                            (currentTab.equals("스터디 메이트의 목표") && !currentUserId.equals(userId))) {
+//                        originalGoalList.add(goal);
+//                    }
+//                }
+//
+//
+//
+//                sortGoalsByDueDate();
+//                // 필터 적용
+//                filterGoals(currentFilter);
+//                //sortGoalsByDueDate();
+//            }
+//        });
+//    }
+
+
+
+
+
     private void filterGoals(String filter) {
         List<Goal> filteredGoals = new ArrayList<>();
 
@@ -221,18 +398,19 @@ public class GoalBoardFragment extends Fragment {
             if (goal == null || goal.getStatus() == null) continue;
 
             int dueInDays = goal.getDueInDays();
-            if (filter.equals("설정한 목표(미인증)") && goal.getStatus().equals("pending") && dueInDays > 0) {
+            if (filter.equals("설정한 목표(미인증)") && goal.getStatus().equals("pending") && dueInDays >= 0) {
                 filteredGoals.add(goal);
             } else if (filter.equals("인증한 목표") && goal.getStatus().equals("certified")) {
                 filteredGoals.add(goal);
             } else if (filter.equals("인정된 목표") && goal.getStatus().equals("approved")) {
                 filteredGoals.add(goal);
             } else if (filter.equals("미인정된 목표") &&
-                    (goal.getStatus().equals("unapproved") || (goal.getStatus().equals("pending") && dueInDays <= 0))) {
+                    (goal.getStatus().equals("unapproved") || (goal.getStatus().equals("pending") && dueInDays < 0))) {
                 filteredGoals.add(goal);
             }
         }
 
+        Log.d(TAG, "Filtered Goals: " + filteredGoals.size() + " for filter: " + filter);
         goalAdapter.updateGoals(filteredGoals);
     }
 
@@ -259,7 +437,19 @@ public class GoalBoardFragment extends Fragment {
         }
         editor.putString(GOAL_LIST_KEY, jsonArray.toString());
         editor.apply();
+
+
     }
+
+    private void sortGoalsByDueDate() {
+        Collections.sort(originalGoalList, (goal1, goal2) -> {
+            return Integer.compare(goal1.getDueInDays(), goal2.getDueInDays());
+        });
+
+        // 정렬된 리스트를 어댑터에 반영
+        goalAdapter.updateGoals(new ArrayList<>(originalGoalList));
+    }
+
 }
 
 class Goal {
@@ -271,8 +461,9 @@ class Goal {
     private String status; // 추가된 상태 필드
     private String certificationImageUrl;
     private String certificationDescription;
+    private String nickname;
 
-    public Goal(String id, String title, int dueInDays, int likes, int goalLikes, String status, String certificationImageUrl, String certificationDescription) {
+    public Goal(String id, String title, int dueInDays, int likes, int goalLikes, String status, String certificationImageUrl, String certificationDescription, String nickname) {
         this.id = id;
         this.title = title;
         this.dueInDays = dueInDays;
@@ -281,6 +472,7 @@ class Goal {
         this.status = status; // 초기화
         this.certificationImageUrl = certificationImageUrl;
         this.certificationDescription = certificationDescription;
+        this.nickname = nickname;
     }
 
     // Getter/Setter 메서드 추가
@@ -323,6 +515,7 @@ class Goal {
         return goalLikes;
     }
 
+    public String getNickname() {return nickname; }
 
 
 }
@@ -355,7 +548,25 @@ class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder> {
         Goal goal = goalList.get(position);
         holder.goalTitleTextView.setText(goal.getTitle());
         holder.dueTextView.setText(goal.getDueDate());
-        holder.likeCountTextView.setText(goal.getLikes() + "/" + goal.getGoalLikes());
+        holder.likeCountTextView.setText(String.valueOf(goal.getGoalLikes()));
+
+        String nickname = goal.getNickname();
+        holder.userName.setText(nickname != null ? nickname : "Unknown User");
+
+        String imageUrl = goal.getCertificationImageUrl();
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Glide.with(holder.thumbnail.getContext())
+                    .load(imageUrl)
+                    .placeholder(R.drawable.placeholder_image)
+                    .error(R.drawable.placeholder_image)
+                    .into(holder.thumbnail);
+        } else {
+            holder.thumbnail.setImageResource(R.drawable.placeholder_image);
+        }
+
+        holder.goalTitleTextView.setVisibility(View.VISIBLE);
+        holder.dueTextView.setVisibility(View.VISIBLE);
+        holder.likeCountTextView.setVisibility(View.VISIBLE);
     }
 
     @Override
@@ -364,6 +575,7 @@ class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder> {
     }
 
     public void updateGoals(List<Goal> updatedGoals) {
+        this.goalList.clear();
         this.goalList = updatedGoals;
         notifyDataSetChanged(); // RecyclerView 갱신
     }
@@ -378,11 +590,17 @@ class GoalAdapter extends RecyclerView.Adapter<GoalAdapter.GoalViewHolder> {
         TextView dueTextView;
         TextView likeCountTextView;
 
+        TextView userName;
+
+        ImageView thumbnail;
+
         public GoalViewHolder(@NonNull View itemView, final OnItemClickListener listener) {
             super(itemView);
             goalTitleTextView = itemView.findViewById(R.id.goalTitleTextView);
             dueTextView = itemView.findViewById(R.id.dueTextView);
             likeCountTextView = itemView.findViewById(R.id.likeCountTextView);
+            thumbnail = itemView.findViewById(R.id.thumbnail);
+            userName = itemView.findViewById(R.id.userIdTextView);
 
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();

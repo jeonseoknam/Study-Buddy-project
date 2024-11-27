@@ -100,10 +100,13 @@
             <!-- 설명 추가를 위한 EditText -->
             <EditText
                 android:id="@+id/certificationDescription"
+                android:background="@drawable/rounded_edittext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:padding="15dp"
                 android:layout_below="@id/certificationImagePreview"
                 android:layout_marginTop="16dp"
+                android:textColorHint="#858585"
                 android:hint="인증 설명을 입력하세요" />
 
             <TextView
@@ -111,7 +114,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/certificationDescription"
-                android:textSize="15sp"/>
+                android:textSize="20sp"/>
 
             <!-- 인증하기 버튼 -->
             <Button

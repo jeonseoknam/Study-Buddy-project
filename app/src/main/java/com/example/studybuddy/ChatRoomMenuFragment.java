@@ -18,6 +18,8 @@ import androidx.fragment.app.Fragment;
 public class ChatRoomMenuFragment extends Fragment {
 
     private String chatID;
+    private String nickName;
+    private SharedPreferences userPref;
     private SharedPreferences chatNamePref;
 
     @Override
@@ -31,6 +33,8 @@ public class ChatRoomMenuFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_chat_room_menu,container,false);
         chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
         chatID = chatNamePref.getString("Name", "none");
+        userPref = getContext().getSharedPreferences("userData", Context.MODE_PRIVATE);
+        nickName = userPref.getString("Nickname", "none");
 
         return view;
 
@@ -69,7 +73,8 @@ public class ChatRoomMenuFragment extends Fragment {
                 GoalBoardFragment fragment = new GoalBoardFragment();
 
                 Bundle args = new Bundle();
-                args.putString("chatID", chatID);
+                args.putString("chatRoomId", chatID);
+                args.putString("nickname", nickName);
                 fragment.setArguments(args);
 
                 getParentFragmentManager().beginTransaction()
