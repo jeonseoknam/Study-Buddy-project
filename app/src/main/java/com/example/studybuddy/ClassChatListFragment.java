@@ -1,6 +1,8 @@
 package com.example.studybuddy;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -9,19 +11,22 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.studybuddy.databinding.FragmentClassChatListBinding;
-import com.example.studybuddy.utility.userData;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.AggregateQuerySnapshot;
 import com.google.firebase.firestore.AggregateSource;
@@ -68,9 +73,10 @@ public class ClassChatListFragment extends Fragment {
 
     ChatListAdapter adapter;
 
-    FragmentClassChatListBinding binding;
+    private SharedPreferences chatNamePref;
 
     ArrayList<ChatListItem> chatListItems = new ArrayList<>();
+    ArrayList<ChatListItem> searchListItems = new ArrayList<>();
 
     DocumentReference docRef = db.collection("chatRoom").document("singleChat");
 
@@ -118,6 +124,7 @@ public class ClassChatListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 
         RecyclerView recyclerView = view.findViewById(R.id.chatListRecyclerView);
+        chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
 
         adapter = new ChatListAdapter(chatListItems);
         recyclerView.setAdapter(adapter);
@@ -165,6 +172,44 @@ public class ClassChatListFragment extends Fragment {
             }
         });
 
+        FloatingActionButton addChatButton = view.findViewById(R.id.addChatButton);
+        addChatButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requireActivity().getSupportFragmentManager().beginTransaction()
+                        .add(R.id.fragment_container, CreateChatFragment.newInstance("param1","param2"))
+                        .commit();
+            }
+        });
+
+        EditText chatNameEdittext = view.findViewById(R.id.chatSearchEdittext);
+        chatNameEdittext.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String chatSearch = chatNameEdittext.getText().toString();
+                searchListItems.clear();
+                if (chatSearch.equals("")){
+                    adapter.setListItems(chatListItems);
+                } else {
+                    for (int i = 0; i < chatListItems.size(); i++){
+                        if (chatListItems.get(i).getName().toLowerCase().contains(chatSearch.toLowerCase())){
+                            searchListItems.add(chatListItems.get(i));
+                        }
+                        adapter.setListItems(searchListItems);
+                    }
+                }
+            }
+        });
+
+
         super.onViewCreated(view, savedInstanceState);
 
     }
@@ -203,10 +248,12 @@ public class ClassChatListFragment extends Fragment {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(getActivity(), ChatroomActivity.class);
-                    intent.putExtra("chatname", item.chatname);
-                    startActivity(intent);
-                    getActivity().finish();
+                    SharedPreferences.Editor editor = chatNamePref.edit();
+                    editor.putString("Name", item.chatname);
+                    editor.apply();
+                    requireActivity().getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragment_container, new ChatRoomFragment())
+                            .commit();
                 }
             });
         }
@@ -214,6 +261,11 @@ public class ClassChatListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return listItems.size();
+        }
+
+        public void setListItems(ArrayList<ChatListItem> chatListItems){
+            this.listItems = chatListItems;
+            notifyDataSetChanged();
         }
 
         @NonNull

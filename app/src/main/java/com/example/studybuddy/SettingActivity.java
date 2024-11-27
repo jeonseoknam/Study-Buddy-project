@@ -1,6 +1,8 @@
 package com.example.studybuddy;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -21,7 +23,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.studybuddy.databinding.ActivitySettingBinding;
-import com.example.studybuddy.utility.userData;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -43,6 +44,7 @@ public class SettingActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseStorage storage;
     private Uri imgUri = null;
+    private SharedPreferences userPref;
     ActivitySettingBinding binding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,15 +55,17 @@ public class SettingActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
         storage = FirebaseStorage.getInstance();
+        userPref = getSharedPreferences("userData", Context.MODE_PRIVATE);
 
-        binding.nameText.setText(userData.userName);
-        binding.emailAdressText.setText(userData.userEmail);
-        binding.schoolNameText.setText(userData.userSchool);
-        binding.editMajor.setText(userData.userMajor);
-        binding.editNickName.setText(userData.userNickname);
 
-        if (userData.profileUrl != null){
-            Glide.with(this).load(userData.profileUrl).into(binding.profileChange);
+        binding.nameText.setText(userPref.getString("Name","none"));
+        binding.emailAdressText.setText(userPref.getString("Email","none"));
+        binding.schoolNameText.setText(userPref.getString("School","none"));
+        binding.editMajor.setText(userPref.getString("Major","none"));
+        binding.editNickName.setText(userPref.getString("Nickname", "none"));
+
+        if (userPref.getString("Profile",null) != null){
+            Glide.with(this).load(userPref.getString("Profile",null)).into(binding.profileChange);
         }
 
         binding.profileChange.setOnClickListener(new View.OnClickListener() {
@@ -87,19 +91,26 @@ public class SettingActivity extends AppCompatActivity {
                     Toast.makeText(SettingActivity.this, "잘못된 학과 입력", Toast.LENGTH_SHORT).show();
                 } else if (newNickname.isEmpty()||newNickname==null) {
                     Toast.makeText(SettingActivity.this, "잘못된 닉네임 입력", Toast.LENGTH_SHORT).show();
-                } else if (!prevPassword.equals(userData.userPassword)){
+                } else if (!prevPassword.equals(userPref.getString("Password","none"))){
                     Toast.makeText(SettingActivity.this, "기존 비밀번호가 아닙니다.", Toast.LENGTH_SHORT).show();
-                } else if (newPassword.equals(userData.userPassword)) {
+                } else if (newPassword.equals(userPref.getString("Password","none"))) {
                     Toast.makeText(SettingActivity.this, "기존 비밀번호와 동일합니다.", Toast.LENGTH_SHORT).show();
                 } else if (newPassword.isEmpty()){
                     Toast.makeText(SettingActivity.this, "새로운 비밀번호를 입력하십시오", Toast.LENGTH_SHORT).show();
                 } else {
                     Map<String, Object> data = new HashMap<>();
-                    if (!newMajor.equals(userData.userMajor))
+                    SharedPreferences.Editor editor = userPref.edit();
+                    if (!newMajor.equals(userPref.getString("Major","none"))) {
                         data.put("Major", newMajor);
-                    if (!newNickname.equals(userData.userNickname))
+                        editor.putString("Major",newMajor);
+                    }
+                    if (!newNickname.equals(userPref.getString("Nickname","none"))) {
                         data.put("Nickname", newNickname);
+                        editor.putString("Nickname",newNickname);
+                    }
                     data.put("Password", newPassword);
+                    editor.putString("Password",newPassword);
+                    editor.apply();
                     db.collection("userInfo").document(mAuth.getCurrentUser().getUid()).update(data);
                     mAuth.getCurrentUser().updatePassword(newPassword).addOnCompleteListener(new OnCompleteListener<Void>() {
                         @Override
@@ -121,6 +132,7 @@ public class SettingActivity extends AppCompatActivity {
                 @Override
                 public void onActivityResult(ActivityResult o) {
                     if (o.getResultCode() == RESULT_OK){
+                        userPref = getSharedPreferences("userData",Context.MODE_PRIVATE);
                         Intent intent = o.getData();
                         imgUri = intent.getData();
                         Glide.with(binding.profileChange).load(imgUri).into(binding.profileChange);
@@ -129,9 +141,11 @@ public class SettingActivity extends AppCompatActivity {
                         stoRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
-                                userData.profileUrl = uri.toString();
+                                SharedPreferences.Editor editor = userPref.edit();
+                                editor.putString("Profile", uri.toString());
+                                editor.apply();
                                 Map<String, Object> data = new HashMap<>();
-                                data.put("ProfileImage", userData.profileUrl);
+                                data.put("ProfileImage", userPref.getString("Profile",null));
                                 db.collection("userInfo").document(mAuth.getCurrentUser().getUid()).update(data);
                             }
                         });
