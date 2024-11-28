@@ -269,8 +269,46 @@ public class GoalDetailsFragment extends Fragment {
                 });
     }
 
+//    private void endorseGoal(String goalId) {
+//        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
+//
+//        if (chatRoomId == null || chatRoomId.isEmpty()) {
+//            Log.e("logchk", "ChatRoomId is missing!");
+//            Toast.makeText(getContext(), "ChatRoomId가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
+//            return;
+//        }
+//
+//        Map<String, Object> updateData = new HashMap<>();
+//        updateData.put("endorsedByOthers", true); // 기존 인정 필드
+//        updateData.put("status", "approved"); // 상태를 'approved'로 설정
+//
+//        // Firestore 경로
+//        DocumentReference goalRef = db.collection("Goals")
+//                .document(chatRoomId)
+//                .collection("goals")
+//                .document(goalId);
+//
+//        // `goalLikes` 필드 증가
+//        goalRef.update(updateData) // 기존 필드 업데이트
+//                .addOnSuccessListener(aVoid -> {
+//                    // goalLikes 증가
+//                    goalRef.update("goalLikes", FieldValue.increment(1))
+//                            .addOnSuccessListener(aVoid1 -> {
+//                                Toast.makeText(getContext(), "목표가 인정되었습니다!", Toast.LENGTH_SHORT).show();
+//
+//                                // 창 닫기
+//                                if (getActivity() != null) {
+//                                    getActivity().getSupportFragmentManager().popBackStack();
+//                                }
+//                            })
+//                            .addOnFailureListener(e -> Log.e("logchk", "Error incrementing goalLikes: " + e.getMessage()));
+//                })
+//                .addOnFailureListener(e -> Log.e("logchk", "Error endorsing goal: " + e.getMessage()));
+//    }
+
     private void endorseGoal(String goalId) {
         String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
+        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // 현재 사용자 ID
 
         if (chatRoomId == null || chatRoomId.isEmpty()) {
             Log.e("logchk", "ChatRoomId is missing!");
@@ -278,23 +316,34 @@ public class GoalDetailsFragment extends Fragment {
             return;
         }
 
-        Map<String, Object> updateData = new HashMap<>();
-        updateData.put("endorsedByOthers", true); // 기존 인정 필드
-        updateData.put("status", "approved"); // 상태를 'approved'로 설정
-
-        // Firestore 경로
         DocumentReference goalRef = db.collection("Goals")
                 .document(chatRoomId)
                 .collection("goals")
                 .document(goalId);
 
-        // `goalLikes` 필드 증가
-        goalRef.update(updateData) // 기존 필드 업데이트
+        // Firestore에 목표 인정 정보 업데이트
+        Map<String, Object> updateData = new HashMap<>();
+        updateData.put("endorsedByOthers", true);
+        updateData.put("status", "approved");
+
+        goalRef.update(updateData) // 상태 업데이트
                 .addOnSuccessListener(aVoid -> {
-                    // goalLikes 증가
+                    // goalLikes 필드 증가
                     goalRef.update("goalLikes", FieldValue.increment(1))
                             .addOnSuccessListener(aVoid1 -> {
                                 Toast.makeText(getContext(), "목표가 인정되었습니다!", Toast.LENGTH_SHORT).show();
+
+                                // 알림 정보 Firestore에 저장
+                                goalRef.get()
+                                        .addOnSuccessListener(documentSnapshot -> {
+                                            if (documentSnapshot.exists()) {
+                                                String goalTitle = documentSnapshot.getString("title");
+                                                String goalOwnerId = documentSnapshot.getString("userId"); // 목표 작성자 ID
+
+                                                // 알림 정보 Firestore에 저장
+                                                saveNotification(goalOwnerId, goalTitle, chatRoomId, goalId, currentUserId);
+                                            }
+                                        });
 
                                 // 창 닫기
                                 if (getActivity() != null) {
@@ -306,36 +355,21 @@ public class GoalDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> Log.e("logchk", "Error endorsing goal: " + e.getMessage()));
     }
 
+    private void saveNotification(String recipientId, String goalTitle, String chatRoomId, String goalId, String senderId) {
+        Map<String, Object> notificationData = new HashMap<>();
+        notificationData.put("userId", recipientId); // 알림을 받을 사용자 ID (목표 작성자)
+        notificationData.put("title", "목표가 인정받았습니다!");
+        notificationData.put("message", "당신의 목표 \"" + goalTitle + "\"이 인정되었습니다!");
+        notificationData.put("chatRoomId", chatRoomId);
+        notificationData.put("goalId", goalId);
+        notificationData.put("senderId", senderId); // 알림을 보낸 사용자 ID
+        notificationData.put("timestamp", FieldValue.serverTimestamp());
 
-//    private void endorseGoal(String goalId) {
-//        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
-//
-//        if (chatRoomId == null || chatRoomId.isEmpty()) {
-//            Log.e(TAG, "ChatRoomId is missing!");
-//            Toast.makeText(getContext(), "ChatRoomId가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        Map<String, Object> updateData = new HashMap<>();
-//        updateData.put("endorsedByOthers", true); // 기존 인정 필드
-//        updateData.put("status", "approved"); // 상태를 'approved'로 설정
-//
-//        db.collection("Goals").document(chatRoomId).collection("goals").document(goalId)
-//                .update(updateData)
-//                .addOnSuccessListener(aVoid -> {
-//                    Toast.makeText(getContext(), "목표가 인정되었습니다!", Toast.LENGTH_SHORT).show();
-//
-//                    // 승인 완료 후 창 닫기
-//                    if (getActivity() != null) {
-//                        getActivity().getSupportFragmentManager().popBackStack();
-//                    }
-//                })
-//                .addOnFailureListener(e -> {
-//                    Log.e(TAG, "Error endorsing goal: " + e.getMessage());
-//                });
-//    }
-
-
+        db.collection("notifications")
+                .add(notificationData)
+                .addOnSuccessListener(documentReference -> Log.d("logchk", "Notification saved successfully!"))
+                .addOnFailureListener(e -> Log.e("logchk", "Failed to save notification: " + e.getMessage()));
+    }
 
 
 

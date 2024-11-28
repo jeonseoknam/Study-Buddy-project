@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 if (itemId == R.id.notificationPage) {
-                    transferTo(MyNotificationsFragment.newInstance("param1", "param2"));
+                    transferTo(new MyNotificationsFragment());
                     return true;
                 }
 
