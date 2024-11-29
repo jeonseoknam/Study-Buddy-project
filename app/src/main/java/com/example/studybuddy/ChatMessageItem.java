@@ -5,12 +5,14 @@ public class ChatMessageItem {
     String message;
     String time;
     String profileUrl;
+    String imageMessage;
 
-    public ChatMessageItem(String name, String message, String time, String profileUrl) {
+    public ChatMessageItem(String name, String message, String time, String profileUrl, String imageMessage) {
         this.name = name;
         this.message = message;
         this.time = time;
         this.profileUrl = profileUrl;
+        this.imageMessage = imageMessage;
     }
     public ChatMessageItem() {
     }
@@ -45,5 +47,13 @@ public class ChatMessageItem {
 
     public void setProfileUrl(String profileUrl) {
         this.profileUrl = profileUrl;
+    }
+
+    public String getImageMessage() {
+        return imageMessage;
+    }
+
+    public void setImageMessage(String imageMessage) {
+        this.imageMessage = imageMessage;
     }
 }

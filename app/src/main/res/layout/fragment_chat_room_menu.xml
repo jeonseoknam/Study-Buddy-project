@@ -8,6 +8,7 @@
     android:padding="16dp"
     android:background="#292F3F"
     android:id="@+id/fragment_container"
+    android:clickable="true"
     >
 
     <!-- 상단 프로필 및 제목 -->

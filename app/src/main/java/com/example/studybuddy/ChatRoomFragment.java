@@ -1,10 +1,18 @@
 package com.example.studybuddy;
 
+import static android.app.Activity.RESULT_OK;
 import static androidx.core.content.ContextCompat.getSystemService;
 
+import static java.lang.Thread.sleep;
+
+import android.animation.Animator;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.Image;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +24,11 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.Dimension;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -23,6 +36,10 @@ import androidx.fragment.app.FragmentResultListener;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.studybuddy.databinding.FragmentChatRoomBinding;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -30,6 +47,9 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import org.w3c.dom.Text;
 
@@ -41,9 +61,12 @@ import java.util.Map;
 
 public class ChatRoomFragment extends Fragment {
 
+    private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private FirebaseStorage storage;
+    private Uri fileUri = null;
     private String chatname;
-    private String testname;
+    private ImageView addFile, expend, totalView;
 
     private SharedPreferences userPref, chatNamePref;
     private final int MY_CHAT=1, OTHER_CHAT=0;
@@ -74,8 +97,25 @@ public class ChatRoomFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
+        storage = FirebaseStorage.getInstance();
         userPref = getContext().getSharedPreferences("userData", Context.MODE_PRIVATE);
+
+        totalView = view.findViewById(R.id.total_image);
+        expend = view.findViewById(R.id.expanded_image);
+        expend.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (expend.getVisibility() == View.VISIBLE){
+                    expend.setVisibility(View.GONE);
+                    totalView.setVisibility(View.GONE);
+                    Log.d("logchk", "onClick: " + expend.getVisibility());
+                    expend.setImageResource(0);
+                }
+            }
+        });
+
 
         RecyclerView recyclerView = view.findViewById(R.id.chatRecyclerView);
         adapter = new ChatAdapter(messageItems);
@@ -97,9 +137,10 @@ public class ChatRoomFragment extends Fragment {
                         String name = msg.get("name").toString();
                         String message = msg.get("message").toString();
                         String time = msg.get("time").toString();
-                        String profileUrl = msg.get("profileUrl").toString();
+                        String profileUrl = (String) msg.get("profileUrl");
+                        String imageMessage = (String) msg.get("imageMessage");
 
-                        ChatMessageItem item = new ChatMessageItem(name, message, time, profileUrl);
+                        ChatMessageItem item = new ChatMessageItem(name, message, time, profileUrl,imageMessage);
 
                         messageItems.add(item);
                         adapter.notifyItemInserted(messageItems.size() - 1);
@@ -112,6 +153,34 @@ public class ChatRoomFragment extends Fragment {
             }
         });
 
+        addFile = view.findViewById(R.id.addImageFile);
+        TextView deleteFile = view.findViewById(R.id.btn_fileDeleteButton);
+        ImageButton addFileButton = view.findViewById(R.id.btn_attachButton);
+        addFileButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_PICK);
+                intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
+                intent.setAction(Intent.ACTION_PICK);
+                fileLauncher.launch(intent);
+                ViewGroup.LayoutParams params = addFile.getLayoutParams();
+                deleteFile.setTextSize(Dimension.DP, 60);
+                params.height = 500;
+                addFile.setLayoutParams(params);
+            }
+        });
+        deleteFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ViewGroup.LayoutParams params = addFile.getLayoutParams();
+                deleteFile.setTextSize(Dimension.DP, 1);
+                params.height = 1;
+                addFile.setLayoutParams(params);
+                addFile.setImageResource(0);
+                fileUri = null;
+            }
+        });
+
         ImageButton sendButton = view.findViewById(R.id.btn_sendButton);
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,20 +188,54 @@ public class ChatRoomFragment extends Fragment {
                 String nickname = userPref.getString("Nickname","none");
                 EditText messageInput = view.findViewById(R.id.messageInput);
                 String message = messageInput.getText().toString();
+                Log.d("logchk", "onClick: "+fileUri);
+                String imageMessage = null;
+                Object currentTime = System.currentTimeMillis();
                 if (!message.isEmpty()){
-                    String profileUrl = userPref.getString("Profile",null);
-                    Calendar calendar = Calendar.getInstance();
-                    String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
-                    Object currentTime = System.currentTimeMillis();
-                    Map<String, Object> lastTime = new HashMap<>();
-                    lastTime.put(chatname, currentTime);
-                    db.collection("chatRoom").document("singleChat").update(lastTime);
-                    ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl);
-                    chatRef.document("msg" + currentTime).set(item);
-                    messageInput.setText("");
+                    if (fileUri != null) {
 
-                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_NOT_ALWAYS);
+                        StorageReference stoRef = storage.getReference("chatImage/" + System.currentTimeMillis());
+                        stoRef.putFile(fileUri);
+                        try {
+                            sleep(3000);
+                        } catch (InterruptedException e){
+                            Log.d("logchk", "onClick: " + e);
+                        }
+
+                        stoRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                String imageMessage = uri.toString();
+                                Map<String, Object> link = new HashMap<>();
+                                link.put("imageMessage", uri);
+                                chatRef.document("msg"+currentTime).update(link);
+                                fileUri = null;
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+
+                                Log.d("logchk", "onFailure: 다운 실패" + e);
+                            }
+                        });
+                    }
+                        String profileUrl = userPref.getString("Profile", null);
+                        Calendar calendar = Calendar.getInstance();
+                        String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+                        Map<String, Object> lastTime = new HashMap<>();
+                        lastTime.put(chatname, currentTime);
+                        db.collection("chatRoom").document("singleChat").update(lastTime);
+                        ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl, imageMessage);
+                        chatRef.document("msg" + currentTime).set(item);
+                        messageInput.setText("");
+                        ViewGroup.LayoutParams params = addFile.getLayoutParams();
+                        deleteFile.setTextSize(Dimension.DP, 1);
+                        params.height = 1;
+                        addFile.setLayoutParams(params);
+                        addFile.setImageResource(0);
+
+                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_NOT_ALWAYS);
                 }
             }
         });
@@ -147,17 +250,37 @@ public class ChatRoomFragment extends Fragment {
                         .commit();
             }
         });
-
     }
+    private ActivityResultLauncher<Intent> fileLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            new ActivityResultCallback<ActivityResult>() {
+                @Override
+                public void onActivityResult(ActivityResult o) {
+                    if (o.getResultCode() == RESULT_OK){
+                        Intent intent = o.getData();
+                        fileUri = intent.getData();
+                        Glide.with(addFile).load(fileUri).into(addFile);
+                        Map<String, Object> test = new HashMap<>();
+                        test.put("link", fileUri);
+                        db.collection("chatReferences").document("item"+System.currentTimeMillis()).set(test);
+                    }
+                }
+            }
+    );
+
+
+
 
     private class MyViewHolder extends RecyclerView.ViewHolder{
         ImageView profile;
+        ImageView imageMessage;
         TextView name;
         TextView message;
         TextView time;
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
             profile = itemView.findViewById(R.id.profileImage);
+            imageMessage = itemView.findViewById(R.id.messageImage);
             name = itemView.findViewById(R.id.username);
             message = itemView.findViewById(R.id.messageText);
             time = itemView.findViewById(R.id.chatMessage_time);
@@ -178,8 +301,24 @@ public class ChatRoomFragment extends Fragment {
             holder.name.setText(item.name);
             holder.message.setText(item.message);
             holder.time.setText(item.time);
-            if (!item.profileUrl.equals("none"))
+            if (item.imageMessage != null){
+                ViewGroup.LayoutParams params = holder.imageMessage.getLayoutParams();
+                params.width = 500;
+                Glide.with(ChatRoomFragment.this).load(item.imageMessage).into(holder.imageMessage);
+            }
+            if (item.profileUrl != null)
                 Glide.with(ChatRoomFragment.this).load(item.profileUrl).into(holder.profile);
+            if (item.imageMessage != null){
+                holder.imageMessage.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        expend.setVisibility(View.VISIBLE);
+                        totalView.setVisibility(View.VISIBLE);
+                        Glide.with(ChatRoomFragment.this).load(item.imageMessage).into(expend);
+                        Log.d("logchk", "onClick: " + expend.getVisibility());
+                    }
+                });
+            }
         }
 
         @Override

@@ -129,48 +129,64 @@ public class ClassChatListFragment extends Fragment {
         adapter = new ChatListAdapter(chatListItems);
         recyclerView.setAdapter(adapter);
 
-        docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                Map<String, Object> data = value.getData();
-                List<String> list = new ArrayList<>(data.keySet());
-                list.sort(new Comparator<String>() {
-                    @Override
-                    public int compare(String o1, String o2) {
-                        return data.get(o2).toString().compareTo(data.get(o1).toString());
-                    }
-                });
-                chatListItems.clear();
-                for (String chatList : list){
-                    docRef.collection(chatList).document("msg"+data.get(chatList)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                        @Override
-                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                            if (task.isSuccessful()) {
-                                DocumentSnapshot document = task.getResult();
-                                if (document.exists()) {
-                                    Map<String, Object> list = document.getData();
-                                    String chatName = chatList;
-                                    String message = list.get("message").toString();
-                                    String time = list.get("time").toString();
-                                    String profile = list.get("profileUrl").toString();
-                                    ChatListItem item = new ChatListItem(chatName, message, time, profile);
-
-                                    chatListItems.add(item);
-                                    adapter.notifyItemInserted(chatListItems.size() - 1);
-                                    recyclerView.scrollToPosition(0);
-                                    Log.d("logchk", "onComplete: " + chatListItems);
-
-                                } else {
-                                    Log.d("logchk", "No such document");
-                                }
-                            } else {
-                                Log.d("logchk", "get failed with ", task.getException());
-                            }
+        try {
+            docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                @Override
+                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                    Map<String, Object> data = value.getData();
+                    if (value.exists()){
+                        List<String> list = new ArrayList<>(data.keySet());
+                        list.sort(new Comparator<String>() {
+                                      @Override
+                                      public int compare(String o1, String o2) {
+                                          return data.get(o2).toString().compareTo(data.get(o1).toString());
+                                      }
+                                  }
+                        );
+                        chatListItems.clear();
+                        for (int i = 0 ; i < list.size() ; i++){
+                            chatListItems.add(new ChatListItem("","","",""));
                         }
-                    });
+                        for (int sequence = 0; sequence < list.size() ; sequence++){
+                            String chatList = list.get(sequence);
+                            int finalSequence = sequence;
+                            docRef.collection(chatList).document("msg"+data.get(chatList)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                @Override
+                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                    if (task.isSuccessful()) {
+                                        DocumentSnapshot document = task.getResult();
+                                        if (document.exists()) {
+                                            Map<String, Object> list = document.getData();
+                                            String chatName = chatList;
+                                            String message = list.get("message").toString();
+                                            String time = list.get("time").toString();
+                                            String profile = list.get("profileUrl").toString();
+                                            ChatListItem item = new ChatListItem(chatName, message, time, profile);
+
+                                            chatListItems.remove(finalSequence);
+                                            chatListItems.add(finalSequence,item);
+                                            adapter.notifyDataSetChanged();
+                                            //           adapter.notifyItemInserted(chatListItems.size() - 1);
+                                            recyclerView.scrollToPosition(0);
+                                            Log.d("logchk", "onComplete: " + chatListItems.size());
+
+                                        } else {
+                                            Log.d("logchk", "No such document");
+                                        }
+                                    } else {
+                                        Log.d("logchk", "get failed with ", task.getException());
+                                    }
+                                }
+                            });
+                        }
+                    }
+
                 }
-            }
-        });
+            });
+        } catch (SecurityException e) {
+            Log.d("logchk", "onViewCreated: " + e);
+        }
+
 
         FloatingActionButton addChatButton = view.findViewById(R.id.addChatButton);
         addChatButton.setOnClickListener(new View.OnClickListener() {

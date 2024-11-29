@@ -12,15 +12,16 @@
         android:src="@drawable/profile"
         android:contentDescription="Profile Image"
         android:layout_alignTop="@+id/chatMessage_time"
-        android:layout_alignLeft="@+id/messageText"
+        android:layout_alignLeft="@+id/messageFrame"
         android:background="@drawable/rounded_profile_background" />
+
     <TextView
         android:id="@+id/username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="사용자 이름"
-        android:layout_alignLeft="@+id/messageText"
-        android:layout_alignBaseline="@+id/messageText"
+        android:layout_alignLeft="@+id/messageFrame"
+        android:layout_alignBaseline="@+id/messageFrame"
         android:textSize="1sp" />
     <!-- 날짜/시간 텍스트 -->
     <TextView
@@ -30,23 +31,42 @@
         android:text="08:43"
         android:textSize="12sp"
         android:textColor="#B0B0B0"
-        android:layout_toLeftOf="@+id/messageText"
-        android:layout_alignBottom="@+id/messageText"
+        android:layout_toLeftOf="@+id/messageFrame"
+        android:layout_alignBottom="@+id/messageFrame"
         android:layout_marginRight="8dp"
         android:layout_marginBottom="8dp"
         />
 
-    <!-- 메시지 -->
-    <TextView
-        android:id="@+id/messageText"
+    <LinearLayout
+        android:id="@+id/messageFrame"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="메시지 내용"
-        android:textColor="#FFFFFF"
-        android:textSize="16sp"
-        android:padding="10dp"
-        android:background="@drawable/rounded_message_background"
-        android:layout_alignParentRight="true"/>
+        android:layout_alignParentRight="true"
+        android:orientation="vertical"
+        android:background="@drawable/rounded_button">
+        <ImageView
+            android:id="@+id/messageImage"
+            android:layout_width="1dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/rounded_message_background"
+            android:layout_gravity="center_horizontal"
+            />
+    <!-- 메시지 -->
+        <TextView
+            android:id="@+id/messageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="메시지 내용"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp"
+            android:maxWidth="250dp"
+            android:padding="10dp"
+            android:background="@drawable/rounded_message_background"
+            android:layout_alignParentRight="true"/>
+    </LinearLayout>
 
 
 </RelativeLayout>
