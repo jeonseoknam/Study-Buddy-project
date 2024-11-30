@@ -1,7 +1,10 @@
 package com.example.studybuddy;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -9,17 +12,26 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
+    private SharedPreferences userPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +66,33 @@ public class LoginActivity extends AppCompatActivity {
     }
     private void updateUI(FirebaseUser user) {
         if (user != null) {
+            Log.d("logchk", "updateUI: " + user.getUid());
+           // db.collection("userInfo");
+         /*   docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                @Override
+                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document.exists()) {
+                            Log.d("logchk", "userData saved");
+                            userPref = getSharedPreferences("userData", Context.MODE_PRIVATE);
+                            SharedPreferences.Editor editor = userPref.edit();
+                            editor.putString("Name", document.getData().get("Name").toString());
+                            editor.putString("Email", document.getData().get("Email").toString());
+                            editor.putString("Password", document.getData().get("Password").toString());
+                            editor.putString("School", document.getData().get("School").toString());
+                            editor.putString("Major", document.getData().get("Major").toString());
+                            editor.putString("Nickname", document.getData().get("Nickname").toString());
+                            editor.putString("Profile", document.getData().get("ProfileImage").toString());
+                            editor.apply();
+                        } else {
+                            Log.d("logchk", "No such document");
+                        }
+                    } else {
+                        Log.d("logchk", "get failed with ", task.getException());
+                    }
+                }
+            });*/
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }

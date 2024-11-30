@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+        <ImageView
+            android:id="@+id/accountImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_account_circle_24"
+            android:layout_marginLeft="20dp"
+            android:layout_alignTop="@id/chatRoomNameText"
+            android:layout_alignBottom="@id/chatRoomNameText"/>
+
+        <TextView
+            android:id="@+id/chatRoomNameText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="알고리즘(나)"
+            android:textSize="24dp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_toRightOf="@id/accountImage"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="20dp"/>
+
+        <!-- 뒤로가기 버튼 -->
+        <ImageButton
+            android:id="@+id/backButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_arrow_back_24"
+            android:background="?android:attr/selectableItemBackground"
+            android:layout_alignParentEnd="true"
+            android:layout_alignTop="@id/chatRoomNameText"
+            android:layout_alignBottom="@id/chatRoomNameText"
+            android:layout_marginRight="20dp"
+            android:contentDescription="뒤로가기 버튼"/>
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/goalTab"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/accountImage"
+            android:layout_marginRight="16dp"
+            android:layout_marginLeft="16dp"
+            app:tabTextColor="#858585"
+            app:tabSelectedTextColor="#FFFFFF"
+            android:background="?attr/selectableItemBackgroundBorderless">
+            <com.google.android.material.tabs.TabItem
+                android:id="@+id/btn_myGoalTab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="나의 목표" />
+
+            <com.google.android.material.tabs.TabItem
+                android:id="@+id/btn_friendsGoalTab"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="스터디 메이트의 목표"/>
+        </com.google.android.material.tabs.TabLayout>
+
+        <Spinner
+            android:id="@+id/goalSetSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/goalTab"
+            android:layout_marginTop="10dp"
+            android:layout_alignParentRight="true"
+            android:spinnerMode="dropdown"
+            android:popupBackground="#2F3A48"/>
+
+
+
+
+
+
+    </RelativeLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewGoals"
+        android:layout_marginTop="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false"
+        tools:listitem="@layout/item_goal" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/addGoalButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:src="@drawable/ic_add"
+        android:backgroundTint="#03A9F1"/>
+
+</LinearLayout>

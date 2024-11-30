@@ -26,20 +26,35 @@
         android:textStyle="bold"
         android:textSize="14sp" />
 
-        <!-- 메시지 -->
-    <TextView
-        android:id="@+id/messageText"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="메시지 내용"
-        android:maxWidth="250dp"
-        android:textColor="#FFFFFF"
-        android:background="@drawable/rounded_message_background"
+        android:id="@+id/messageFrame"
         android:layout_alignLeft="@+id/username"
         android:layout_below="@+id/username"
-        android:padding="10dp"
-        android:textSize="16sp" />
-
+        android:orientation="vertical"
+        android:background="@drawable/rounded_button">
+        <ImageView
+            android:id="@+id/messageImage"
+            android:layout_width="1dp"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="6dp"
+            android:layout_marginRight="6dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/rounded_message_background"
+            android:layout_gravity="center_horizontal"/>
+        <!-- 메시지 -->
+        <TextView
+            android:id="@+id/messageText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="메시지 내용"
+            android:maxWidth="250dp"
+            android:textColor="#FFFFFF"
+            android:background="@drawable/rounded_message_background"
+            android:padding="10dp"
+            android:textSize="16sp" />
+    </LinearLayout>
     <!-- 날짜/시간 텍스트 -->
     <TextView
         android:id="@+id/chatMessage_time"
@@ -48,8 +63,10 @@
         android:text="08:43"
         android:textSize="12sp"
         android:textColor="#B0B0B0"
-        android:layout_toRightOf="@+id/messageText"
-        android:layout_alignBottom="@+id/messageText"
+        android:layout_toRightOf="@+id/messageFrame"
+        android:layout_alignBottom="@+id/messageFrame"
         android:layout_marginBottom="8dp"
-        android:layout_marginLeft="8dp"/> <!-- 오른쪽 정렬 -->
+        android:layout_marginLeft="8dp"/>
+
+    <!-- 오른쪽 정렬 -->
 </RelativeLayout>

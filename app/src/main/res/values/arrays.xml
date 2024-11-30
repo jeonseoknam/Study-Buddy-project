@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="goal_filter_options">
+        <item>설정한 목표(미인증)</item>
+        <item>인증한 목표</item>
+        <item>인정된 목표</item>
+        <item>미인정된 목표</item>
+    </array>
+</resources>

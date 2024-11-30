@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+            <ImageView
+                android:id="@+id/accountImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_account_circle_24"
+                android:layout_marginLeft="20dp"
+                android:layout_alignTop="@id/chatTitleText"
+                android:layout_alignBottom="@id/chatTitleText"/>
+
+            <TextView
+                android:id="@+id/chatTitleText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="채팅 제목"
+                android:textSize="24dp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_toRightOf="@id/accountImage"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="20dp"/>
+
+            <!-- 뒤로가기 버튼 -->
+            <ImageButton
+                android:id="@+id/btn_chatMenu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_menu_24"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_alignParentEnd="true"
+                android:layout_alignTop="@id/chatTitleText"
+                android:layout_alignBottom="@id/chatTitleText"
+                android:layout_marginRight="20dp"
+                android:contentDescription="목록 버튼"/>
+        </RelativeLayout>
+
+        <!-- 채팅 메시지 리스트 -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/chatRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            android:layout_weight="1"
+            android:padding="8dp"
+            android:scrollbars="vertical"
+            android:clipToPadding="false"/>
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#4f5464">
+            <ImageView
+                android:id="@+id/addImageFile"
+                android:layout_height="1dp"
+                android:layout_width="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="4dp"
+                />
+            <TextView
+                android:id="@+id/btn_fileDeleteButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="x"
+                android:textSize="1dp"
+                android:textColor="#8e94a9"
+                android:layout_marginBottom="4dp"
+                android:layout_marginTop="4dp"
+                android:layout_alignParentRight="true"
+                android:layout_marginRight="10dp"/>
+
+        </RelativeLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="8dp"
+            android:background="#2C2F38"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"> <!-- 수직 중앙 정렬 -->
+
+            <EditText
+                android:id="@+id/messageInput"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="match_parent"
+                android:hint="메시지 입력..."
+                android:background="@drawable/rounded_edittext"
+                android:textColor="#FFFFFF"
+                android:textColorHint="#858585"
+                android:padding="12dp"
+                android:gravity="center_vertical" />
+
+            <!-- 첨부 버튼과 전송 버튼을 세로로 배치 -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:layout_marginLeft="10dp">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <!-- 테마가 적용된 버튼 -->
+                    <Button
+                        android:id="@+id/btn_noUse1"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:text=""
+                        android:backgroundTint="#00AC83"
+                        android:contentDescription="Themed button" />
+
+                    <ImageButton
+                        android:id="@+id/btn_attachButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/baseline_attach_file_24"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:contentDescription="Attach"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginBottom="4dp" />
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <!-- 테마가 적용된 버튼 -->
+                    <Button
+                        android:id="@+id/btn_noUse2"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:text=""
+                        android:backgroundTint="#837DFF"
+                        android:contentDescription="Themed button" />
+
+                    <ImageButton
+                        android:id="@+id/btn_sendButton"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:src="@drawable/baseline_send_24"
+                        android:background="?android:attr/selectableItemBackground"
+                        android:contentDescription="Send"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginLeft="1dp"/>
+                </FrameLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/total_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black"
+        android:alpha="0.4"
+        android:visibility="gone"/>
+
+    <ImageView
+        android:id="@+id/expanded_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:layout_marginRight="50dp"
+        android:layout_marginLeft="50dp"
+        android:layout_gravity="center"/>
+
+</FrameLayout>

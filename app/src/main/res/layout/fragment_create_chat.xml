@@ -4,7 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:background="#292F3F"
+    android:orientation="vertical"
+    android:clickable="true">
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -60,6 +62,7 @@
             android:layout_below="@id/chatRoomNameText"
             android:hint="채팅방 이름 입력..."
             android:textColorHint="#858585"
+            android:textColor="#858585"
             android:inputType="text"
             android:padding="12dp"
             android:layout_marginLeft="20dp"
@@ -85,6 +88,7 @@
             android:layout_below="@id/classCodeText"
             android:hint="수업 코드 입력..."
             android:textColorHint="#858585"
+            android:textColor="#858585"
             android:inputType="text"
             android:padding="12dp"
             android:layout_marginLeft="20dp"
@@ -235,12 +239,12 @@
         </RadioGroup>
 
         <Button
-            android:id="@+id/btn_signUp"
+            android:id="@+id/btn_createChat"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_below="@id/radioPublicSelect"
             android:layout_centerHorizontal="true"
-            android:text="회원가입"
+            android:text="채팅 생성"
             android:layout_marginTop="20dp"
             android:textSize="20dp"/>
 

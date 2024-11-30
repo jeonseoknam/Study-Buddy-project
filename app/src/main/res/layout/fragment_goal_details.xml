@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="16dp">
+
+            <!-- 기존 요소들 (프로필 이미지, 제목, 뒤로가기 버튼 등) -->
+            <ImageView
+                android:id="@+id/accountImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_account_circle_24"
+                android:layout_marginLeft="20dp"
+                android:layout_alignTop="@id/chatRoomNameText"
+                android:layout_alignBottom="@id/chatRoomNameText" />
+
+            <TextView
+                android:id="@+id/chatRoomNameText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="알고리즘(나)"
+                android:textSize="24dp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_toRightOf="@id/accountImage"
+                android:layout_marginLeft="10dp"
+                android:layout_marginTop="20dp" />
+
+            <!-- 뒤로가기 버튼 -->
+            <ImageButton
+                android:id="@+id/backButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/baseline_arrow_back_24"
+                android:background="?android:attr/selectableItemBackground"
+                android:layout_alignParentEnd="true"
+                android:layout_alignTop="@id/chatRoomNameText"
+                android:layout_alignBottom="@id/chatRoomNameText"
+                android:layout_marginRight="20dp"
+                android:contentDescription="뒤로가기 버튼" />
+
+            <TextView
+                android:id="@+id/goalDetailsTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/chatRoomNameText"
+                android:text="예시"
+                android:layout_marginTop="20dp"
+                android:textSize="25sp"
+                android:layout_marginLeft="20dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/goalDetailsDueDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/goalDetailsTitle"
+                android:layout_alignParentRight="true"
+                android:text="0000년 00월 00일" />
+
+            <TextView
+                android:id="@+id/goalDetailsDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/goalDetailsDueDate"
+                android:layout_alignLeft="@id/goalDetailsTitle"
+                android:text="this task is...." />
+
+            <!-- 이미지 추가 버튼 -->
+            <Button
+                android:id="@+id/btn_addImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/goalDetailsDescription"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
+                android:text="이미지 추가" />
+
+            <!-- 이미지 미리보기 공간 -->
+            <ImageView
+                android:id="@+id/certificationImagePreview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/btn_addImage"
+                android:layout_marginTop="16dp"
+                android:contentDescription="이미지 미리보기 공간" />
+
+            <!-- 설명 추가를 위한 EditText -->
+            <EditText
+                android:id="@+id/certificationDescription"
+                android:background="@drawable/rounded_edittext"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="15dp"
+                android:layout_below="@id/certificationImagePreview"
+                android:layout_marginTop="16dp"
+                android:textColorHint="#858585"
+                android:hint="인증 설명을 입력하세요" />
+
+            <TextView
+                android:id="@+id/certificationDescriptionSet"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/certificationDescription"
+                android:textSize="20sp"/>
+
+            <!-- 인증하기 버튼 -->
+            <Button
+                android:id="@+id/btn_goalDetailsChange"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
+                android:text="인증하기"
+                android:layout_below="@id/certificationDescriptionSet"/>
+
+        </RelativeLayout>
+    </LinearLayout>
+</ScrollView>
