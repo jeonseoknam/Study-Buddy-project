@@ -1,71 +1,60 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="#1E1E2F">
 
-    <!-- 캘린더 뷰 -->
+    <!-- 캘린더 -->
     <CalendarView
         android:id="@+id/calendar_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:background="#FFFFFF" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#FFFFFF"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.5" />
+
+    <!-- 일정 리스트 -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/schedule_recycler_view"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="#292A2E"
+        app:layout_constraintTop_toBottomOf="@id/calendar_view"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/input_schedule"
+        app:layout_constraintHeight_percent="0.3" />
 
     <!-- 일정 입력 -->
     <EditText
         android:id="@+id/input_schedule"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/calendar_view"
-        android:layout_marginTop="16dp"
+        android:backgroundTint="#3B82F6"
         android:hint="일정을 입력하세요"
-        android:textColorHint="#FFFFFF"
+        android:minHeight="48dp"
+        android:padding="10dp"
         android:textColor="#FFFFFF"
-        android:padding="12dp"
-        android:background="@drawable/rounded_edittext" />
+        android:textColorHint="#CCCCCC"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/schedule_recycler_view" />
 
-    <!-- "등록" 버튼 -->
+    <!-- 등록 버튼 -->
     <Button
         android:id="@+id/register_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/input_schedule"
-        android:layout_marginTop="16dp"
-        android:layout_centerHorizontal="true"
-        android:text="등록" />
+        android:layout_marginTop="8dp"
+        android:text="등록"
+        android:backgroundTint="#3B82F6"
+        android:textColor="#FFFFFF"
+        app:layout_constraintTop_toBottomOf="@id/input_schedule"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
-    <!-- "예"와 "아니오" 버튼 (초기에는 숨김) -->
-    <LinearLayout
-        android:id="@+id/confirmation_buttons"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/input_schedule"
-        android:layout_marginTop="16dp"
-        android:layout_centerHorizontal="true"
-        android:visibility="gone"
-        android:orientation="horizontal">
-
-        <Button
-            android:id="@+id/btn_yes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="등록 확정"
-            android:layout_marginEnd="16dp" />
-
-        <Button
-            android:id="@+id/btn_no"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="등록 취소" />
-    </LinearLayout>
-
-    <!-- "일정 보기" 버튼 -->
-    <Button
-        android:id="@+id/view_schedule_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/register_button"
-        android:layout_marginTop="16dp"
-        android:layout_centerHorizontal="true"
-        android:text="일정 보기" />
-</RelativeLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
