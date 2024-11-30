@@ -123,15 +123,6 @@ public class MyProfileFragment extends Fragment {
             }
         });
 
-        Button toGoalButton = view.findViewById(R.id.btn_goalTest);
-        toGoalButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                getParentFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, new GoalBoardFragment())
-                        .commit();
-            }
-        });
 
         Button logoutbutton = view.findViewById(R.id.btn_logout);
         logoutbutton.setOnClickListener(new View.OnClickListener() {
