@@ -42,7 +42,7 @@ public class MyTimerFragment extends Fragment {
 
     private TextView timerText;         // 시간 표시 텍스트
     private ProgressBar circularProgress; // 원형 ProgressBar
-    private Button deleteButton, pauseButton, registerButton, rankingButton;
+    private Button deleteButton, pauseButton, registerButton, rankingButton, historyButton;
 
     private Handler handler = new Handler(Looper.getMainLooper());
     private int elapsedTime = 0; // 경과 시간 (단위: 초)
@@ -122,6 +122,7 @@ public class MyTimerFragment extends Fragment {
         pauseButton = view.findViewById(R.id.pause_button);
         registerButton = view.findViewById(R.id.register_button);
         rankingButton = view.findViewById(R.id.ranking_button);
+        historyButton = view.findViewById(R.id.history_button);
 
 
         // 초기 타이머 설정
@@ -143,7 +144,7 @@ public class MyTimerFragment extends Fragment {
 
         });
 
-        rankingButton.setOnClickListener(v -> {
+       historyButton.setOnClickListener(v -> {
             Toast.makeText(getContext(), "나의 공부 기록 페이지로 이동합니다",Toast.LENGTH_SHORT).show();
 
             requireActivity().getSupportFragmentManager().beginTransaction()
@@ -151,6 +152,14 @@ public class MyTimerFragment extends Fragment {
                     .addToBackStack(null)
                     .commit();
         });
+
+        rankingButton.setOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new RankingFragment())
+                    .addToBackStack(null)
+                    .commit();
+        });
+
 
 
         return view;
@@ -305,11 +314,6 @@ public class MyTimerFragment extends Fragment {
     }
 
 
-
-
-
-
-
     private void updateUI() {
         if (isServiceBound) {
             int elapsedTime = timerService.getElapsedTime();
@@ -322,9 +326,5 @@ public class MyTimerFragment extends Fragment {
             circularProgress.setProgress(progress);
         }
     }
-
-
-
-
 
 }

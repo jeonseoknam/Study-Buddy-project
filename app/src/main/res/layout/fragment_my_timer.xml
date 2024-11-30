@@ -9,16 +9,27 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:gravity="center_vertical">
+        android:gravity="center"> <!-- center로 변경 -->
 
-        <TextView
+        <Button
+            android:id="@+id/history_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/rounded_button"
+            android:padding="8dp"
+            android:text="기록 화인"
+            android:textColor="#FFFFFF" />
+
+        <!-- TextView에 weight 추가 -->
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="개인 타이머"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#FFFFFF"
-            android:layout_marginEnd="8dp" />
+            android:gravity="center" /> <!-- gravity 추가 -->
 
         <Button
             android:id="@+id/ranking_button"
@@ -26,9 +37,10 @@
             android:layout_height="wrap_content"
             android:background="@drawable/rounded_button"
             android:padding="8dp"
-            android:text="기록 화인"
+            android:text="랭킹"
             android:textColor="#FFFFFF" />
     </LinearLayout>
+
 
     <!-- 원형 타이머 -->
     <FrameLayout

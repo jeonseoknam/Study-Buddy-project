@@ -4,6 +4,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,15 +28,21 @@ import java.util.Map;
 
 public class MyStudyTimeFragment extends Fragment {
 
+    // Firebase 관련 변수
     private FirebaseFirestore firestore;
     private FirebaseAuth firebaseAuth;
 
+    // RecyclerView 및 Adapter
     private RecyclerView recyclerView;
     private StudyTimeAdapter adapter;
     private List<StudyTimeItem> subjectStudyTimes = new ArrayList<>();
 
+    // UI 요소
     private TextView totalTimeText; // 총 공부 시간 표시 TextView
+    private Spinner sortSpinner;   // 정렬 기준을 선택하는 Spinner
 
+    // 현재 선택된 정렬 옵션
+    private String currentSortOption = "1주"; // 기본 정렬 기준
 
     public static MyStudyTimeFragment newInstance(String param1, String param2) {
         MyStudyTimeFragment fragment = new MyStudyTimeFragment();
@@ -53,13 +62,31 @@ public class MyStudyTimeFragment extends Fragment {
         firestore = FirebaseFirestore.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
 
-        // View 초기화
+        // UI 요소 초기화
+        sortSpinner = view.findViewById(R.id.sort_spinner);
+        totalTimeText = view.findViewById(R.id.total_study_time);
         recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        totalTimeText = view.findViewById(R.id.total_study_time); // 총 공부 시간 TextView
+        // Spinner 설정
+        ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(getContext(),
+                R.array.sort_options, android.R.layout.simple_spinner_item);
+        spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sortSpinner.setAdapter(spinnerAdapter);
 
-        // 데이터 가져오기 및 화면 업데이트
+        // Spinner 선택 이벤트 처리
+        sortSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                currentSortOption = parent.getItemAtPosition(position).toString();
+                fetchStudySessions(); // 선택된 기준에 따라 데이터를 다시 가져옴
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        // 데이터 가져오기 및 초기 설정
         fetchStudySessions();
 
         return view;
@@ -75,22 +102,31 @@ public class MyStudyTimeFragment extends Fragment {
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     Map<String, Long> subjectTimes = new HashMap<>();
                     long totalTimeInSeconds = 0;
+                    long currentTime = System.currentTimeMillis();
 
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        StudySession session = document.toObject(StudySession.class);
+                        // 필드 데이터 가져오기
+                        String subjectName = document.getString("subject_name");
+                        String elapsedTime = document.getString("elapsed_time");
+                        Object timestampObj = document.get("timestamp");
 
-                        // 과목별 시간 계산
-                        String subjectName = session.getSubject_name();
-                        String[] timeParts = session.getElapsed_time().split(":"); // "mm:ss" 형식
-                        long sessionTimeInSeconds = Integer.parseInt(timeParts[0]) * 60 // mm -> 초
-                                + Integer.parseInt(timeParts[1]);     // ss -> 초
+                        // 필드 검증
+                        if (subjectName == null || elapsedTime == null || !(timestampObj instanceof Long)) {
+                            continue;
+                        }
 
-                        totalTimeInSeconds += sessionTimeInSeconds;
+                        long timestamp = (Long) timestampObj;
 
-                        if (subjectTimes.containsKey(subjectName)) {
-                            subjectTimes.put(subjectName, subjectTimes.get(subjectName) + sessionTimeInSeconds);
-                        } else {
-                            subjectTimes.put(subjectName, sessionTimeInSeconds);
+                        // 시간 필터링 (정렬 기준에 따른 데이터 필터링)
+                        if (isWithinTimeRange(currentSortOption, timestamp, currentTime)) {
+                            String[] timeParts = elapsedTime.split(":");
+                            long sessionTimeInSeconds = Integer.parseInt(timeParts[0]) * 60
+                                    + Integer.parseInt(timeParts[1]);
+
+                            totalTimeInSeconds += sessionTimeInSeconds;
+
+                            // 과목별 시간 누적
+                            subjectTimes.put(subjectName, subjectTimes.getOrDefault(subjectName, 0L) + sessionTimeInSeconds);
                         }
                     }
 
@@ -112,6 +148,23 @@ public class MyStudyTimeFragment extends Fragment {
                 });
     }
 
+    // 정렬 기준에 따른 시간 필터링
+    private boolean isWithinTimeRange(String sortOption, long timestamp, long currentTime) {
+        long oneDayInMillis = 24 * 60 * 60 * 1000;  // 하루
+        long oneWeekInMillis = 7 * oneDayInMillis;  // 일주일
+        long oneMonthInMillis = 30 * oneDayInMillis; // 한 달
+
+        switch (sortOption) {
+            case "하루":
+                return currentTime - timestamp <= oneDayInMillis;
+            case "1주":
+                return currentTime - timestamp <= oneWeekInMillis;
+            case "1달":
+                return currentTime - timestamp <= oneMonthInMillis;
+            default:
+                return true;
+        }
+    }
 
     // 시간 포맷팅 메서드 (초 -> "hh:mm:ss")
     private String formatTime(long seconds) {
