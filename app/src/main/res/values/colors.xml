@@ -4,4 +4,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="purple">#B347EA</color>
     <color name="dark_gray">#373E4E</color>
+    <color name="navy">#001F3F</color> <!-- 남색 -->
+    <color name="blue">#007BFF</color> <!-- 버튼 색상 -->
+
 </resources>

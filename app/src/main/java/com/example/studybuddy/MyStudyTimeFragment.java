@@ -172,6 +172,6 @@ public class MyStudyTimeFragment extends Fragment {
         long minutes = (seconds % 3600) / 60;
         long secs = seconds % 60;
 
-        return String.format("총 공부 시간: %02d시간 %02d분 %02d초", hours, minutes, secs);
+        return String.format("나의 총 공부 시간: %02d시간 %02d분 %02d초", hours, minutes, secs);
     }
 }
