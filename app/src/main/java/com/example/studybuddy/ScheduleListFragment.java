@@ -17,15 +17,19 @@ import java.util.List;
 public class ScheduleListFragment extends Fragment {
     private List<Schedule> scheduleList;
 
-    public ScheduleListFragment(List<Schedule> scheduleList) {
-        this.scheduleList = scheduleList;
-    }
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_schedule_list, container, false);
 
+        // 데이터 받기
+        if (getArguments() != null) {
+            scheduleList = (List<Schedule>) getArguments().getSerializable("schedule_list");
+        } else {
+            scheduleList = new ArrayList<>();
+        }
+
+        // 리스트뷰 설정
         ListView scheduleListView = view.findViewById(R.id.schedule_list_view);
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 getContext(),

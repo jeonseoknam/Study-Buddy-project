@@ -4,16 +4,17 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
 import android.widget.CalendarView;
-import android.widget.LinearLayout;
 import android.widget.EditText;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,11 +27,10 @@ public class MyCalendarFragment extends Fragment {
         return new MyCalendarFragment();
     }
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_calendar, container, false);
+        View view = inflater.inflate(R.layout.fragment_my_calendar, container, false);
 
         // View 참조
         CalendarView calendarView = view.findViewById(R.id.calendar_view);
@@ -81,8 +81,14 @@ public class MyCalendarFragment extends Fragment {
 
         // "일정 보기" 버튼 클릭 이벤트
         viewScheduleButton.setOnClickListener(v -> {
+            Bundle bundle = new Bundle();
+            bundle.putSerializable("schedule_list", (Serializable) scheduleList);
+
+            ScheduleListFragment scheduleListFragment = new ScheduleListFragment();
+            scheduleListFragment.setArguments(bundle);
+
             getParentFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new ScheduleListFragment(scheduleList))
+                    .replace(R.id.fragment_container, scheduleListFragment)
                     .addToBackStack(null)
                     .commit();
         });

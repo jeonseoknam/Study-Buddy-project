@@ -1,6 +1,8 @@
 package com.example.studybuddy;
 
-public class Schedule {
+import java.io.Serializable;
+
+public class Schedule implements Serializable {
     private String date;
     private String description;
 
