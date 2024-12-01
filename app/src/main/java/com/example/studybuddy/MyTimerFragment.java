@@ -139,12 +139,16 @@ public class MyTimerFragment extends Fragment {
 
         //등록 버튼
         registerButton.setOnClickListener(v -> {
-            String time = timerText.getText().toString();
-            showInputDialog();
-
+            RegisterBottomSheet bottomSheet = new RegisterBottomSheet();
+            bottomSheet.setRegisterListener((subjectName, memo) -> {
+                // Firestore에 데이터 저장
+                saveTimeToFirestore(timerText.getText().toString(), subjectName, memo);
+            });
+            bottomSheet.show(getParentFragmentManager(), bottomSheet.getTag());
         });
 
-       historyButton.setOnClickListener(v -> {
+
+        historyButton.setOnClickListener(v -> {
             Toast.makeText(getContext(), "나의 공부 기록 페이지로 이동합니다",Toast.LENGTH_SHORT).show();
 
             requireActivity().getSupportFragmentManager().beginTransaction()

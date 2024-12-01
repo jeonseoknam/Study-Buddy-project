@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 배경색 -->
+    <solid android:color="#3F51B5" /> <!-- 파란색 배경 -->
+
+    <!-- 둥근 모서리 -->
+    <corners android:radius="12dp" />
+
+    <!-- 클릭 시 상태 (Ripple 효과를 사용하지 않을 경우 주석 처리 가능) -->
+    <stroke
+        android:width="1dp"
+        android:color="#FFFFFF" /> <!-- 흰색 테두리 -->
+</shape>

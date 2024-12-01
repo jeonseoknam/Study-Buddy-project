@@ -219,23 +219,23 @@ public class ChatRoomFragment extends Fragment {
                             }
                         });
                     }
-                        String profileUrl = userPref.getString("Profile", null);
-                        Calendar calendar = Calendar.getInstance();
-                        String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
-                        Map<String, Object> lastTime = new HashMap<>();
-                        lastTime.put(chatname, currentTime);
-                        db.collection("chatRoom").document("singleChat").update(lastTime);
-                        ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl, imageMessage);
-                        chatRef.document("msg" + currentTime).set(item);
-                        messageInput.setText("");
-                        ViewGroup.LayoutParams params = addFile.getLayoutParams();
-                        deleteFile.setTextSize(Dimension.DP, 1);
-                        params.height = 1;
-                        addFile.setLayoutParams(params);
-                        addFile.setImageResource(0);
+                    String profileUrl = userPref.getString("Profile", null);
+                    Calendar calendar = Calendar.getInstance();
+                    String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+                    Map<String, Object> lastTime = new HashMap<>();
+                    lastTime.put(chatname, currentTime);
+                    db.collection("chatRoom").document("singleChat").update(lastTime);
+                    ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl, imageMessage);
+                    chatRef.document("msg" + currentTime).set(item);
+                    messageInput.setText("");
+                    ViewGroup.LayoutParams params = addFile.getLayoutParams();
+                    deleteFile.setTextSize(Dimension.DP, 1);
+                    params.height = 1;
+                    addFile.setLayoutParams(params);
+                    addFile.setImageResource(0);
 
-                        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_NOT_ALWAYS);
+                    InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_NOT_ALWAYS);
                 }
             }
         });

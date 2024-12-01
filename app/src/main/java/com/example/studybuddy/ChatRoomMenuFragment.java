@@ -62,7 +62,26 @@ public class ChatRoomMenuFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), ChatCalendarActivity.class);
+                intent.putExtra("chatRoomId", chatID);
                 startActivity(intent);
+            }
+        });
+
+        Button btn_classTimer = view.findViewById(R.id.btn_classTimer);
+        btn_classTimer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                ChatTimerFragment fragment = new ChatTimerFragment();
+                Bundle args = new Bundle();
+                args.putString("chatRoomId", chatID);
+                args.putString("nickname", nickName);
+                fragment.setArguments(args);
+
+                getParentFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, fragment)
+                        .addToBackStack(null)
+                        .commit();
             }
         });
 

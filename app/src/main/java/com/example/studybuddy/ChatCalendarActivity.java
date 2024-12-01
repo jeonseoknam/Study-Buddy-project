@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -30,24 +31,58 @@ public class ChatCalendarActivity extends AppCompatActivity {
     private RecyclerView selectedDateRecyclerView;
     private ScheduleAdapter scheduleAdapter;
     private List<ScheduleModel> scheduleList;
-    private String selectedDate = null; // 초기값을 null로 설정
-    private String chatRoomId = "qwerqwer"; // 채팅방 ID
-    private String userName = "";
-    private String userProfileUrl = "";
+    private String selectedDate = null; // 선택된 날짜
+    private String chatRoomId = ""; // 채팅방 ID
+    private String userName = ""; // 사용자 이름
+    private String userProfileUrl = ""; // 사용자 프로필 URL
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_calendar);
 
+        // Intent로 전달받은 chatRoomId 확인
+        chatRoomId = getIntent().getStringExtra("chatRoomId");
+        if (chatRoomId == null || chatRoomId.isEmpty()) {
+            Toast.makeText(this, "채팅방 ID가 없습니다.", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Firestore 초기화
         db = FirebaseFirestore.getInstance();
+
+        // RecyclerView 초기화
         selectedDateRecyclerView = findViewById(R.id.selected_date_recycler_view);
         selectedDateRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         scheduleList = new ArrayList<>();
         scheduleAdapter = new ScheduleAdapter(scheduleList);
         selectedDateRecyclerView.setAdapter(scheduleAdapter);
 
-        // 현재 사용자 UID 가져오기
+        // 사용자 정보 로드
+        fetchUserData();
+
+        // CalendarView 초기화
+        CalendarView calendarView = findViewById(R.id.calendar_view);
+        calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
+            selectedDate = year + "-" + (month + 1) + "-" + dayOfMonth;
+            fetchSchedulesForSelectedDate(); // 선택된 날짜의 일정 불러오기
+        });
+
+        // 일정 등록 버튼
+        Button registerScheduleButton = findViewById(R.id.register_schedule_button);
+        registerScheduleButton.setOnClickListener(v -> showBottomSheetDialog());
+
+        // 일정 보기 버튼
+        Button viewScheduleButton = findViewById(R.id.view_schedule_button);
+        viewScheduleButton.setOnClickListener(v -> {
+            Intent intent = new Intent(ChatCalendarActivity.this, ScheduleListActivity.class);
+            intent.putExtra("chatRoomId", chatRoomId); // 현재 채팅방 ID 전달
+            startActivity(intent);
+        });
+    }
+
+    private void fetchUserData() {
         String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         db.collection("userInfo").document(currentUserId)
                 .get()
@@ -60,26 +95,6 @@ public class ChatCalendarActivity extends AppCompatActivity {
                     }
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "오류 발생: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-
-        CalendarView calendarView = findViewById(R.id.calendar_view);
-
-        // 날짜 선택 리스너
-        calendarView.setOnDateChangeListener((view, year, month, dayOfMonth) -> {
-            selectedDate = year + "-" + (month + 1) + "-" + dayOfMonth;
-            fetchSchedulesForSelectedDate(); // 선택된 날짜에 따라 일정 업데이트
-        });
-
-        // 채팅방 일정 등록 버튼
-        Button registerScheduleButton = findViewById(R.id.register_schedule_button);
-        registerScheduleButton.setOnClickListener(v -> showBottomSheetDialog());
-
-        // 채팅방 일정 보기 버튼
-        Button viewScheduleButton = findViewById(R.id.view_schedule_button);
-        viewScheduleButton.setOnClickListener(v -> {
-            Intent intent = new Intent(ChatCalendarActivity.this, ScheduleListActivity.class);
-            intent.putExtra("chatRoomId", chatRoomId);
-            startActivity(intent);
-        });
     }
 
     private void showBottomSheetDialog() {
@@ -87,17 +102,16 @@ public class ChatCalendarActivity extends AppCompatActivity {
         View bottomSheetView = getLayoutInflater().inflate(R.layout.bottom_sheet_schedule, null);
         bottomSheetDialog.setContentView(bottomSheetView);
 
-        // 입력 필드와 TimePicker 초기화
+        // BottomSheet 내부 View 초기화
         EditText inputSchedule = bottomSheetView.findViewById(R.id.input_schedule);
         TimePicker timePicker = bottomSheetView.findViewById(R.id.time_picker);
         Button saveButton = bottomSheetView.findViewById(R.id.btn_save_schedule);
         Button cancelButton = bottomSheetView.findViewById(R.id.btn_cancel);
         TextView selectedDateView = bottomSheetView.findViewById(R.id.selected_date);
 
-        // 날짜 텍스트 업데이트
+        // 선택된 날짜 표시
         selectedDateView.setText("선택된 날짜: " + selectedDate);
 
-        // "등록" 버튼 클릭 리스너
         saveButton.setOnClickListener(v -> {
             String scheduleTitle = inputSchedule.getText().toString().trim();
             int hour = timePicker.getHour();
@@ -113,9 +127,7 @@ public class ChatCalendarActivity extends AppCompatActivity {
             bottomSheetDialog.dismiss();
         });
 
-        // "취소" 버튼 클릭 리스너
         cancelButton.setOnClickListener(v -> bottomSheetDialog.dismiss());
-
         bottomSheetDialog.show();
     }
 
@@ -125,6 +137,7 @@ public class ChatCalendarActivity extends AppCompatActivity {
             return;
         }
 
+        // Firestore 경로: chatRoom/singleChat/{chatRoomId}/schedules/schedules
         CollectionReference schedulesRef = db.collection("chatRoom")
                 .document("singleChat")
                 .collection(chatRoomId)
@@ -141,18 +154,19 @@ public class ChatCalendarActivity extends AppCompatActivity {
         schedulesRef.add(scheduleData)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(ChatCalendarActivity.this, "일정 등록 완료!", Toast.LENGTH_SHORT).show();
-                    fetchSchedulesForSelectedDate(); // 등록 후 업데이트
+                    fetchSchedulesForSelectedDate(); // 일정 업데이트
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "등록 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void fetchSchedulesForSelectedDate() {
         if (selectedDate == null) {
-            scheduleList.clear(); // 날짜 선택 전에는 일정 비움
+            scheduleList.clear();
             scheduleAdapter.notifyDataSetChanged();
             return;
         }
 
+        // Firestore 경로: chatRoom/singleChat/{chatRoomId}/schedules/schedules
         CollectionReference schedulesRef = db.collection("chatRoom")
                 .document("singleChat")
                 .collection(chatRoomId)
