@@ -99,10 +99,19 @@ public class ChatTimerFragment extends Fragment {
 
         rankingButton.setOnClickListener(v -> {
             Toast.makeText(getContext(), "랭킹 페이지로 이동합니다.", Toast.LENGTH_SHORT).show();
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new RankingFragment())
+                    .addToBackStack(null)
+                    .commit();
         });
 
         historyButton.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "공부 기록 페이지로 이동합니다.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "나의 공부 기록 페이지로 이동합니다",Toast.LENGTH_SHORT).show();
+
+            requireActivity().getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, new TimeListFragment())
+                    .addToBackStack(null)
+                    .commit();
         });
 
         return view;

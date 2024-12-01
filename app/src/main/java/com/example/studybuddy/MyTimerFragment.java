@@ -158,6 +158,7 @@ public class MyTimerFragment extends Fragment {
         });
 
         rankingButton.setOnClickListener(v -> {
+            Toast.makeText(getContext(), "랭킹 페이지로 이동합니다",Toast.LENGTH_SHORT).show();
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new RankingFragment())
                     .addToBackStack(null)
@@ -168,25 +169,7 @@ public class MyTimerFragment extends Fragment {
 
         return view;
     }
-    private void showInputDialog() {
-        // 다이얼로그 레이아웃 설정
-        View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_register_time, null);
-        EditText subjectEditText = dialogView.findViewById(R.id.subject_edit_text);
-        EditText memoEditText = dialogView.findViewById(R.id.memo_edit_text);
 
-        new AlertDialog.Builder(requireContext())
-                .setTitle("공부 기록 저장")
-                .setView(dialogView)
-                .setPositiveButton("저장", (dialog, which) -> {
-                    String subjectName = subjectEditText.getText().toString().trim();
-                    String memo = memoEditText.getText().toString().trim();
-
-                    // Firestore에 데이터 저장
-                    saveTimeToFirestore(timerText.getText().toString(), subjectName, memo);
-                })
-                .setNegativeButton("취소", null)
-                .show();
-    }
 
 
     private void saveTimeToFirestore(String elapsedTime, String subjectName, String memo) {
