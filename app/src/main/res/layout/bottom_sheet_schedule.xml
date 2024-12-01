@@ -1,0 +1,61 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@color/dark_gray"
+    android:padding="16dp">
+
+    <!-- 선택된 날짜 -->
+    <TextView
+        android:id="@+id/selected_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="선택된 날짜: "
+        android:textSize="16sp"
+        android:textColor="#FFFFFF"
+        android:paddingBottom="8dp" />
+
+    <!-- 일정 입력 -->
+    <EditText
+        android:id="@+id/input_schedule"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="일정을 입력하세요"
+        android:textColorHint="#FFFFFF"
+        android:textColor="#FFFFFF"
+        android:background="@drawable/rounded_edittext"
+        android:padding="12dp" />
+
+    <!-- 시간 선택 -->
+    <TimePicker
+        android:id="@+id/time_picker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:timePickerMode="spinner"
+        android:background="#FFFFFF"
+        android:layout_marginTop="16dp" />
+
+    <!-- 버튼 레이아웃 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingTop="16dp">
+
+        <!-- 등록 버튼 -->
+        <Button
+            android:id="@+id/btn_save_schedule"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="등록"
+            android:layout_marginEnd="8dp" />
+
+        <!-- 취소 버튼 -->
+        <Button
+            android:id="@+id/btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="취소" />
+    </LinearLayout>
+</LinearLayout>
