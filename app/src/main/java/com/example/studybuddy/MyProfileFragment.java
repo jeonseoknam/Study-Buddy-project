@@ -1,6 +1,8 @@
 package com.example.studybuddy;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -12,10 +14,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.studybuddy.databinding.FragmentMyProfileBinding;
-import com.example.studybuddy.utility.userData;
+import com.google.firebase.auth.FirebaseAuth;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -32,6 +34,8 @@ public class MyProfileFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private SharedPreferences userPref;
+    private FirebaseAuth mAuth;
 
     public MyProfileFragment() {
         // Required empty public constructor
@@ -94,17 +98,32 @@ public class MyProfileFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        userPref = getContext().getSharedPreferences("userData", Context.MODE_PRIVATE);
 
         ImageView profile = view.findViewById(R.id.profile_image);
-        if (userData.profileUrl != null){
-            Glide.with(this).load(userData.profileUrl).into(profile);
+        if (userPref.getString("Profile",null) != null){
+            Glide.with(this).load(userPref.getString("Profile",null)).into(profile);
         }
+        TextView nameWithNicknameText = view.findViewById(R.id.user_nameText);
+        nameWithNicknameText.setText(userPref.getString("Name","none") + "("+userPref.getString("Nickname", "none")+")");
+        TextView majorText = view.findViewById(R.id.major_infoText);
+        majorText.setText(userPref.getString("Major","none"));
+
         Button settingButton = view.findViewById(R.id.btn_setting);
         settingButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getActivity(), SettingActivity.class);
                 startActivity(intent);
+            }
+        });
+
+        Button logoutbutton = view.findViewById(R.id.btn_logout);
+        logoutbutton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAuth.signOut();
+                getActivity().finish();
             }
         });
     }
