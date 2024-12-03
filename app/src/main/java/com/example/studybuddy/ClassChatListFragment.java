@@ -20,6 +20,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -27,6 +28,8 @@ import com.example.studybuddy.databinding.FragmentClassChatListBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.tabs.TabItem;
+import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.AggregateQuerySnapshot;
 import com.google.firebase.firestore.AggregateSource;
@@ -74,11 +77,13 @@ public class ClassChatListFragment extends Fragment {
     ChatListAdapter adapter;
 
     private SharedPreferences chatNamePref;
+    private RecyclerView recyclerView;
+    private String chatAttribute = "공개 채팅방";
 
     ArrayList<ChatListItem> chatListItems = new ArrayList<>();
     ArrayList<ChatListItem> searchListItems = new ArrayList<>();
 
-    DocumentReference docRef = db.collection("chatRoom").document("singleChat");
+    CollectionReference colRef = db.collection("chatRoom");
 
     public ClassChatListFragment() {
         // Required empty public constructor
@@ -110,83 +115,43 @@ public class ClassChatListFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
     }
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_class_chat_list, container, false);
-
+        loadChatList();
         // Inflate the layout for this fragment
         return view;
     }
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
 
-        RecyclerView recyclerView = view.findViewById(R.id.chatListRecyclerView);
+        recyclerView = view.findViewById(R.id.chatListRecyclerView);
         chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
 
         adapter = new ChatListAdapter(chatListItems);
         recyclerView.setAdapter(adapter);
 
-        try {
-            docRef.addSnapshotListener(new EventListener<DocumentSnapshot>() {
-                @Override
-                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
-                    Map<String, Object> data = value.getData();
-                    if (value.exists()){
-                        List<String> list = new ArrayList<>(data.keySet());
-                        list.sort(new Comparator<String>() {
-                                      @Override
-                                      public int compare(String o1, String o2) {
-                                          return data.get(o2).toString().compareTo(data.get(o1).toString());
-                                      }
-                                  }
-                        );
-                        chatListItems.clear();
-                        for (int i = 0 ; i < list.size() ; i++){
-                            chatListItems.add(new ChatListItem("","","",""));
-                        }
-                        for (int sequence = 0; sequence < list.size() ; sequence++){
-                            String chatList = list.get(sequence);
-                            int finalSequence = sequence;
-                            docRef.collection(chatList).document("msg"+data.get(chatList)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                    if (task.isSuccessful()) {
-                                        DocumentSnapshot document = task.getResult();
-                                        if (document.exists()) {
-                                            Map<String, Object> list = document.getData();
-                                            String chatName = chatList;
-                                            String message = list.get("message").toString();
-                                            String time = list.get("time").toString();
-                                            String profile = list.get("profileUrl").toString();
-                                            ChatListItem item = new ChatListItem(chatName, message, time, profile);
+        TabItem item1 = view.findViewById(R.id.btn_openChat);
+        TabItem item2 = view.findViewById(R.id.btn_privateChat);
 
-                                            chatListItems.remove(finalSequence);
-                                            chatListItems.add(finalSequence,item);
-                                            adapter.notifyDataSetChanged();
-                                            //           adapter.notifyItemInserted(chatListItems.size() - 1);
-                                            recyclerView.scrollToPosition(0);
-                                            Log.d("logchk", "onComplete: " + chatListItems.size());
-
-                                        } else {
-                                            Log.d("logchk", "No such document");
-                                        }
-                                    } else {
-                                        Log.d("logchk", "get failed with ", task.getException());
-                                    }
-                                }
-                            });
-                        }
-                    }
-
-                }
-            });
-        } catch (SecurityException e) {
-            Log.d("logchk", "onViewCreated: " + e);
-        }
-
+        TabLayout tabLayout = view.findViewById(R.id.chatTab);
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                Log.d("logchk", "onTabSelected: " + tab.getText().toString());
+                chatAttribute = tab.getText().toString();
+                chatListItems.clear();
+                if (chatAttribute.equals("공개 채팅방")) loadChatList();
+                else if (chatAttribute.equals("비공개 채팅방")) loadPrivateChatList();
+            }
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+            }
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+            }
+        });
 
         FloatingActionButton addChatButton = view.findViewById(R.id.addChatButton);
         addChatButton.setOnClickListener(new View.OnClickListener() {
@@ -203,11 +168,9 @@ public class ClassChatListFragment extends Fragment {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
             }
-
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
             }
-
             @Override
             public void afterTextChanged(Editable s) {
                 String chatSearch = chatNameEdittext.getText().toString();
@@ -224,11 +187,117 @@ public class ClassChatListFragment extends Fragment {
                 }
             }
         });
-
-
         super.onViewCreated(view, savedInstanceState);
-
     }
+    private void loadChatList(){
+        colRef.document("singleChat").addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                Map<String, Object> data = value.getData();
+                if (value.exists()){
+                    List<String> list = new ArrayList<>(data.keySet());
+                    list.sort(new Comparator<String>() {
+                                  @Override
+                                  public int compare(String o1, String o2) {
+                                      return data.get(o2).toString().compareTo(data.get(o1).toString());
+                                  }
+                              }
+                    );
+                    chatListItems.clear();
+                    for (int i = 0 ; i < list.size() ; i++){
+                        chatListItems.add(new ChatListItem("","","",""));
+                    }
+                    for (int sequence = 0; sequence < list.size() ; sequence++){
+                        String chatList = list.get(sequence);
+                        int finalSequence = sequence;
+                        colRef.document("singleChat").collection(chatList).document("msg"+data.get(chatList)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    DocumentSnapshot document = task.getResult();
+                                    if (document.exists()) {
+                                        Map<String, Object> list = document.getData();
+                                        String chatName = chatList;
+                                        String message = list.get("message").toString();
+                                        String time = list.get("time").toString();
+                                        String profile = list.get("profileUrl").toString();
+                                        ChatListItem item = new ChatListItem(chatName, message, time, profile);
+
+                                        chatListItems.remove(finalSequence);
+                                        chatListItems.add(finalSequence,item);
+                                        adapter.notifyDataSetChanged();
+                                        //           adapter.notifyItemInserted(chatListItems.size() - 1);
+                                        recyclerView.scrollToPosition(0);
+                                        Log.d("logchk", "onComplete: " + chatListItems.size());
+
+                                    } else {
+                                        Log.d("logchk", "No such document");
+                                    }
+                                } else {
+                                    Log.d("logchk", "get failed with ", task.getException());
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+    private void loadPrivateChatList(){
+        colRef.document("privateChat").addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                Map<String, Object> data = value.getData();
+                if (value.exists()){
+                    List<String> list = new ArrayList<>(data.keySet());
+                    list.sort(new Comparator<String>() {
+                                  @Override
+                                  public int compare(String o1, String o2) {
+                                      return data.get(o2).toString().compareTo(data.get(o1).toString());
+                                  }
+                              }
+                    );
+                    chatListItems.clear();
+                    for (int i = 0 ; i < list.size() ; i++){
+                        chatListItems.add(new ChatListItem("","","",""));
+                    }
+                    for (int sequence = 0; sequence < list.size() ; sequence++){
+                        String chatList = list.get(sequence);
+                        int finalSequence = sequence;
+                        colRef.document("privateChat").collection(chatList).document("msg"+data.get(chatList)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                            @Override
+                            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                if (task.isSuccessful()) {
+                                    DocumentSnapshot document = task.getResult();
+                                    if (document.exists()) {
+                                        Map<String, Object> list = document.getData();
+                                        String chatName = chatList;
+                                        String message = list.get("message").toString();
+                                        String time = list.get("time").toString();
+                                        String profile = list.get("profileUrl").toString();
+                                        ChatListItem item = new ChatListItem(chatName, message, time, profile);
+
+                                        chatListItems.remove(finalSequence);
+                                        chatListItems.add(finalSequence,item);
+                                        adapter.notifyDataSetChanged();
+                                        //           adapter.notifyItemInserted(chatListItems.size() - 1);
+                                        recyclerView.scrollToPosition(0);
+                                        Log.d("logchk", "onComplete: " + chatListItems.size());
+
+                                    } else {
+                                        Log.d("logchk", "No such document");
+                                    }
+                                } else {
+                                    Log.d("logchk", "get failed with ", task.getException());
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+
 
     private class MyViewHolder extends RecyclerView.ViewHolder {
         ImageView profile;
@@ -266,6 +335,10 @@ public class ClassChatListFragment extends Fragment {
                 public void onClick(View v) {
                     SharedPreferences.Editor editor = chatNamePref.edit();
                     editor.putString("Name", item.chatname);
+                    if (chatAttribute.equals("공개 채팅방"))
+                        editor.putString("open","singleChat");
+                    else if (chatAttribute.equals("비공개 채팅방"))
+                        editor.putString("open","privateChat");
                     editor.apply();
                     requireActivity().getSupportFragmentManager().beginTransaction()
                             .replace(R.id.fragment_container, new ChatRoomFragment())

@@ -80,6 +80,7 @@
     </RelativeLayout>
 
     <com.google.android.material.tabs.TabLayout
+        android:id="@+id/chatTab"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginRight="16dp"
@@ -89,16 +90,16 @@
         android:background="?attr/selectableItemBackgroundBorderless">
 
         <com.google.android.material.tabs.TabItem
-            android:id="@+id/btn_perClassChat"
+            android:id="@+id/btn_openChat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="강의별 채팅"/>
+            android:text="공개 채팅방"/>
 
         <com.google.android.material.tabs.TabItem
-            android:id="@+id/btn_perPersonChat"
+            android:id="@+id/btn_privateChat"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="개인별 채팅"/>
+            android:text="비공개 채팅방"/>
 
     </com.google.android.material.tabs.TabLayout>
 
