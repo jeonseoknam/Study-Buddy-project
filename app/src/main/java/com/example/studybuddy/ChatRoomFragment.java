@@ -224,10 +224,7 @@ public class ChatRoomFragment extends Fragment {
                         stoRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
-                                String imageMessage = uri.toString();/*
-                                Map<String, Object> link = new HashMap<>();
-                                link.put("imageMessage", uri);
-                                chatRef.document("msg"+currentTime).update(link);*/
+                                String imageMessage = uri.toString();
                                 fileUri = null;
                                 String profileUrl = userPref.getString("Profile", null);
                                 Calendar calendar = Calendar.getInstance();
