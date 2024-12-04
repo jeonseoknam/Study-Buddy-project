@@ -9,6 +9,8 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -194,6 +196,14 @@ public class ClassChatListFragment extends Fragment {
                 }
             }
         });
+
+        Button searchButton = view.findViewById(R.id.btn_chatSearch);
+        searchButton.setOnClickListener(view1 -> {
+            FragmentChatDialog dialog = new FragmentChatDialog();
+            dialog.show(getActivity().getSupportFragmentManager(),"tag");
+
+        });
+
         super.onViewCreated(view, savedInstanceState);
     }
     private void loadChatList(){
