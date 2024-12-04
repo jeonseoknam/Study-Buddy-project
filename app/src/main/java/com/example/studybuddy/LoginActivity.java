@@ -67,32 +67,7 @@ public class LoginActivity extends AppCompatActivity {
     private void updateUI(FirebaseUser user) {
         if (user != null) {
             Log.d("logchk", "updateUI: " + user.getUid());
-           // db.collection("userInfo");
-         /*   docRef.get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document.exists()) {
-                            Log.d("logchk", "userData saved");
-                            userPref = getSharedPreferences("userData", Context.MODE_PRIVATE);
-                            SharedPreferences.Editor editor = userPref.edit();
-                            editor.putString("Name", document.getData().get("Name").toString());
-                            editor.putString("Email", document.getData().get("Email").toString());
-                            editor.putString("Password", document.getData().get("Password").toString());
-                            editor.putString("School", document.getData().get("School").toString());
-                            editor.putString("Major", document.getData().get("Major").toString());
-                            editor.putString("Nickname", document.getData().get("Nickname").toString());
-                            editor.putString("Profile", document.getData().get("ProfileImage").toString());
-                            editor.apply();
-                        } else {
-                            Log.d("logchk", "No such document");
-                        }
-                    } else {
-                        Log.d("logchk", "get failed with ", task.getException());
-                    }
-                }
-            });*/
+
             Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
         }

@@ -78,7 +78,7 @@
             android:layout_below="@id/editTextChatRoomName"
             android:layout_alignLeft="@id/accountImage"
             android:layout_marginTop="20dp"
-            android:text="수업 코드 입력"
+            android:text="채팅방 코드 입력(비공개만)"
             android:textSize="20dp"/>
 
         <EditText
@@ -145,57 +145,10 @@
         </RadioGroup>
 
         <TextView
-            android:id="@+id/invitationAuthorityText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/radioGroupAnonymity"
-            android:layout_alignLeft="@id/accountImage"
-            android:layout_marginTop="20dp"
-            android:text="초대 권한"
-            android:textSize="20dp"/>
-
-        <RadioGroup
-            android:id="@+id/radioInvitationAuthorityGroup"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_below="@id/invitationAuthorityText"
-            android:layout_marginTop="10dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp">
-
-            <RadioButton
-                android:id="@+id/radiobuttonManagerOnly"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="방장만"
-                android:textColor="#FFFFFF"
-                android:background="@drawable/rounded_button"
-                android:button="@null"
-                android:gravity="center"
-                android:padding="10dp" />
-
-            <RadioButton
-                android:id="@+id/radioButtonEveryone"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_height="wrap_content"
-                android:text="모두"
-                android:textColor="#FFFFFF"
-                android:background="@drawable/rounded_button"
-                android:button="@null"
-                android:gravity="center"
-                android:padding="10dp"
-                android:layout_marginStart="10dp" />
-
-        </RadioGroup>
-
-        <TextView
             android:id="@+id/publicSelectText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/radioInvitationAuthorityGroup"
+            android:layout_below="@id/radioGroupAnonymity"
             android:layout_alignLeft="@id/accountImage"
             android:layout_marginTop="20dp"
             android:text="채팅방 공개 여부"
@@ -242,7 +195,7 @@
             android:id="@+id/btn_createChat"
             android:layout_width="150dp"
             android:layout_height="wrap_content"
-            android:layout_below="@id/radioPublicSelect"
+            android:layout_alignParentBottom="true"
             android:layout_centerHorizontal="true"
             android:text="채팅 생성"
             android:layout_marginTop="20dp"

@@ -37,8 +37,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.example.studybuddy.databinding.FragmentChatRoomBinding;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
@@ -65,8 +67,9 @@ public class ChatRoomFragment extends Fragment {
     private FirebaseFirestore db;
     private FirebaseStorage storage;
     private Uri fileUri = null;
-    private String chatname;
+    private String chatname, chatOpen, chatnameset;
     private ImageView addFile, expend, totalView;
+    private CollectionReference chatRef;
 
     private SharedPreferences userPref, chatNamePref;
     private final int MY_CHAT=1, OTHER_CHAT=0;
@@ -76,6 +79,7 @@ public class ChatRoomFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
     }
 
     @Nullable
@@ -86,6 +90,7 @@ public class ChatRoomFragment extends Fragment {
         chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
 
         chatname = chatNamePref.getString("Name","none");
+        chatOpen = chatNamePref.getString("open","singleChat");
         Log.d("logchk", "onCreateView: "+ chatname);
         chatTitle.setText(chatname);
 
@@ -115,13 +120,25 @@ public class ChatRoomFragment extends Fragment {
                 }
             }
         });
-
+        chatRef = db.collection("chatRoom").document(chatOpen).collection(chatname);
+        chatRef.document("chatSetting").collection("setting")
+                .document("setting").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                        chatnameset = task.getResult().getData().get("name").toString();
+                    }
+                });
 
         RecyclerView recyclerView = view.findViewById(R.id.chatRecyclerView);
+        try{
+            sleep(1000);
+        } catch (InterruptedException e){
+
+        }
         adapter = new ChatAdapter(messageItems);
         recyclerView.setAdapter(adapter);
 
-        final CollectionReference chatRef = db.collection("chatRoom").document("singleChat").collection(chatname);
+
         chatRef.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
@@ -185,7 +202,11 @@ public class ChatRoomFragment extends Fragment {
         sendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String nickname = userPref.getString("Nickname","none");
+                String anickname = userPref.getString("Nickname","none");
+                if (chatnameset.equals("realName")){
+                    anickname = userPref.getString("Name","none");
+                }
+                final String nickname = anickname;
                 EditText messageInput = view.findViewById(R.id.messageInput);
                 String message = messageInput.getText().toString();
                 Log.d("logchk", "onClick: "+fileUri);
@@ -193,7 +214,6 @@ public class ChatRoomFragment extends Fragment {
                 Object currentTime = System.currentTimeMillis();
                 if (!message.isEmpty()){
                     if (fileUri != null) {
-
                         StorageReference stoRef = storage.getReference("chatImage/" + System.currentTimeMillis());
                         stoRef.putFile(fileUri);
                         try {
@@ -201,32 +221,36 @@ public class ChatRoomFragment extends Fragment {
                         } catch (InterruptedException e){
                             Log.d("logchk", "onClick: " + e);
                         }
-
                         stoRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                             @Override
                             public void onSuccess(Uri uri) {
                                 String imageMessage = uri.toString();
-                                Map<String, Object> link = new HashMap<>();
-                                link.put("imageMessage", uri);
-                                chatRef.document("msg"+currentTime).update(link);
                                 fileUri = null;
+                                String profileUrl = userPref.getString("Profile", null);
+                                Calendar calendar = Calendar.getInstance();
+                                String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+                                Map<String, Object> lastTime = new HashMap<>();
+                                lastTime.put(chatname, currentTime);
+                                db.collection("chatRoom").document(chatOpen).update(lastTime);
+                                ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl, imageMessage);
+                                chatRef.document("msg" + currentTime).set(item);
                             }
                         }).addOnFailureListener(new OnFailureListener() {
                             @Override
                             public void onFailure(@NonNull Exception e) {
-
                                 Log.d("logchk", "onFailure: 다운 실패" + e);
                             }
                         });
+                    } else {
+                        String profileUrl = userPref.getString("Profile", null);
+                        Calendar calendar = Calendar.getInstance();
+                        String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
+                        Map<String, Object> lastTime = new HashMap<>();
+                        lastTime.put(chatname, currentTime);
+                        db.collection("chatRoom").document(chatOpen).update(lastTime);
+                        ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl, imageMessage);
+                        chatRef.document("msg" + currentTime).set(item);
                     }
-                    String profileUrl = userPref.getString("Profile", null);
-                    Calendar calendar = Calendar.getInstance();
-                    String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
-                    Map<String, Object> lastTime = new HashMap<>();
-                    lastTime.put(chatname, currentTime);
-                    db.collection("chatRoom").document("singleChat").update(lastTime);
-                    ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl, imageMessage);
-                    chatRef.document("msg" + currentTime).set(item);
                     messageInput.setText("");
                     ViewGroup.LayoutParams params = addFile.getLayoutParams();
                     deleteFile.setTextSize(Dimension.DP, 1);
@@ -323,9 +347,15 @@ public class ChatRoomFragment extends Fragment {
 
         @Override
         public int getItemViewType(int position) {
-            if (messageItems.get(position).name.equals(userPref.getString("Nickname","none"))){
-                return  MY_CHAT;
-            }else { return OTHER_CHAT; }
+            if (chatnameset.equals("anonymous")){
+                if (messageItems.get(position).name.equals(userPref.getString("Nickname","none"))){
+                    return  MY_CHAT;
+                }else { return OTHER_CHAT; }
+            }else {
+                if (messageItems.get(position).name.equals(userPref.getString("Name","none"))){
+                    return  MY_CHAT;
+                }else { return OTHER_CHAT; }
+            }
         }
 
         @Override
