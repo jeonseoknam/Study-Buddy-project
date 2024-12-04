@@ -95,6 +95,7 @@
                 android:layout_height="wrap_content"
                 android:layout_below="@id/btn_addImage"
                 android:layout_marginTop="16dp"
+                android:layout_centerHorizontal="true"
                 android:contentDescription="이미지 미리보기 공간" />
 
             <!-- 설명 추가를 위한 EditText -->
@@ -106,6 +107,7 @@
                 android:padding="15dp"
                 android:layout_below="@id/certificationImagePreview"
                 android:layout_marginTop="16dp"
+                android:textColor="#FFFFFF"
                 android:textColorHint="#858585"
                 android:hint="인증 설명을 입력하세요" />
 
@@ -114,7 +116,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/certificationDescription"
-                android:textSize="20sp"/>
+                android:textSize="20sp"
+                android:layout_marginTop="30dp"
+                android:layout_centerHorizontal="true"
+                />
 
             <!-- 인증하기 버튼 -->
             <Button
