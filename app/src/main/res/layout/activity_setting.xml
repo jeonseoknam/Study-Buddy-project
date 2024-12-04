@@ -102,7 +102,7 @@
         android:text="학교명"
         android:textSize="20dp"/>
 
-    <TextView
+    <EditText
         android:id="@+id/schoolNameText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
