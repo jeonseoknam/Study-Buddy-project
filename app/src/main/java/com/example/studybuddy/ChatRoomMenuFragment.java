@@ -52,7 +52,7 @@ public class ChatRoomMenuFragment extends Fragment {
         chatCodeButton = view.findViewById(R.id.btn_Invite);
 
         if (chatOpen.equals("privateChat")) {
-            CollectionReference chatRef = db.collection("chatRoom").document(chatOpen).collection(chatID);
+            CollectionReference chatRef = db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom").document(chatOpen).collection(chatID);
             chatRef.document("chatSetting").collection("setting")
                     .document("setting").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
