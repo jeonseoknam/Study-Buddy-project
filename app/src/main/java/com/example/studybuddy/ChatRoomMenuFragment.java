@@ -92,7 +92,7 @@ public class ChatRoomMenuFragment extends Fragment {
             public void onClick(View v) {
                 ClipData clip = ClipData.newPlainText("text",chatCode);
                 clipboard.setPrimaryClip(clip);
-                Toast.makeText(getContext(), clip + "이 복사되었습니다.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), chatCode + "이 복사되었습니다.", Toast.LENGTH_SHORT).show();
             }
         });
 
