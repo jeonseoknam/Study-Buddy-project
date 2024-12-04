@@ -4,9 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CalendarView;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -51,8 +49,7 @@ public class MyCalendarFragment extends Fragment {
         // View 초기화
         CalendarView calendarView = view.findViewById(R.id.calendar_view);
         RecyclerView scheduleRecyclerView = view.findViewById(R.id.schedule_recycler_view);
-        EditText inputSchedule = view.findViewById(R.id.input_schedule);
-        Button addScheduleButton = view.findViewById(R.id.register_button);
+        View addScheduleButton = view.findViewById(R.id.register_button);
 
         // RecyclerView 설정
         scheduleRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -72,15 +69,18 @@ public class MyCalendarFragment extends Fragment {
                 return;
             }
 
-            String scheduleText = inputSchedule.getText().toString().trim();
-            if (scheduleText.isEmpty()) {
-                Toast.makeText(getContext(), "일정을 입력해주세요.", Toast.LENGTH_SHORT).show();
-                return;
-            }
+            // 모달 바텀시트 호출
+            TimePickerBottomSheetFragment bottomSheet = new TimePickerBottomSheetFragment();
+            bottomSheet.setOnScheduleSaveListener((time, schedule) -> {
+                if (schedule.isEmpty()) {
+                    Toast.makeText(getContext(), "일정을 입력해주세요.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
 
-            // Firestore에 일정 저장
-            saveScheduleToFirestore(scheduleText);
-            inputSchedule.setText(""); // 입력 필드 초기화
+                saveScheduleToFirestore(schedule, time); // Firestore에 일정 저장
+            });
+
+            bottomSheet.show(getChildFragmentManager(), "TimePickerBottomSheet");
         });
 
         return view;
@@ -107,11 +107,11 @@ public class MyCalendarFragment extends Fragment {
     }
 
     // Firestore에 일정 저장
-    private void saveScheduleToFirestore(String scheduleText) {
+    private void saveScheduleToFirestore(String scheduleText, String scheduleTime) {
         Map<String, Object> scheduleData = new HashMap<>();
         scheduleData.put("date", selectedDate);
         scheduleData.put("description", scheduleText);
-        scheduleData.put("time", "시간 미정");
+        scheduleData.put("time", scheduleTime);
 
         userPrivateScheduleRef.add(scheduleData)
                 .addOnSuccessListener(documentReference -> {
