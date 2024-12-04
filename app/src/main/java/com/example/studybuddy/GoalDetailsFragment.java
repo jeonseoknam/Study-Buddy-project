@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -98,6 +99,17 @@ public class GoalDetailsFragment extends Fragment {
                 uploadImageToFirebase(); // 이미지 업로드 후 Firestore 업데이트
             } else {
                 Toast.makeText(getContext(), "이미지를 먼저 선택해주세요.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        ImageButton backButton = view.findViewById(R.id.backButton);
+
+
+        backButton.setOnClickListener(v -> {
+            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
+                getParentFragmentManager().popBackStack();
+            } else {
+                requireActivity().onBackPressed();
             }
         });
 
@@ -269,42 +281,6 @@ public class GoalDetailsFragment extends Fragment {
                 });
     }
 
-//    private void endorseGoal(String goalId) {
-//        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
-//
-//        if (chatRoomId == null || chatRoomId.isEmpty()) {
-//            Log.e("logchk", "ChatRoomId is missing!");
-//            Toast.makeText(getContext(), "ChatRoomId가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
-//
-//        Map<String, Object> updateData = new HashMap<>();
-//        updateData.put("endorsedByOthers", true); // 기존 인정 필드
-//        updateData.put("status", "approved"); // 상태를 'approved'로 설정
-//
-//        // Firestore 경로
-//        DocumentReference goalRef = db.collection("Goals")
-//                .document(chatRoomId)
-//                .collection("goals")
-//                .document(goalId);
-//
-//        // `goalLikes` 필드 증가
-//        goalRef.update(updateData) // 기존 필드 업데이트
-//                .addOnSuccessListener(aVoid -> {
-//                    // goalLikes 증가
-//                    goalRef.update("goalLikes", FieldValue.increment(1))
-//                            .addOnSuccessListener(aVoid1 -> {
-//                                Toast.makeText(getContext(), "목표가 인정되었습니다!", Toast.LENGTH_SHORT).show();
-//
-//                                // 창 닫기
-//                                if (getActivity() != null) {
-//                                    getActivity().getSupportFragmentManager().popBackStack();
-//                                }
-//                            })
-//                            .addOnFailureListener(e -> Log.e("logchk", "Error incrementing goalLikes: " + e.getMessage()));
-//                })
-//                .addOnFailureListener(e -> Log.e("logchk", "Error endorsing goal: " + e.getMessage()));
-//    }
 
     private void endorseGoal(String goalId) {
         String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId

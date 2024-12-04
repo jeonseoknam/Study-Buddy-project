@@ -33,6 +33,7 @@
             android:hint="목표 이름"
             android:padding="12dp"
             android:paddingStart="15dp"
+            android:textColor="#FFFFFF"
             android:layout_marginTop="10dp"
             android:textColorHint="#858585"/>
         <TextView
@@ -46,6 +47,7 @@
             android:id="@+id/editGoalDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:textColor="#FFFFFF"
             android:hint="목표에 대한 간단한 설명"
             android:background="@drawable/rounded_edittext"
             android:paddingStart="15dp"
