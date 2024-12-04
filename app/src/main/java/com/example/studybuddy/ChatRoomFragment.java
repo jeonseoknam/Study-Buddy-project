@@ -120,7 +120,7 @@ public class ChatRoomFragment extends Fragment {
                 }
             }
         });
-        chatRef = db.collection("chatRoom").document(chatOpen).collection(chatname);
+        chatRef = db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom").document(chatOpen).collection(chatname);
         chatRef.document("chatSetting").collection("setting")
                 .document("setting").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                     @Override
@@ -231,7 +231,7 @@ public class ChatRoomFragment extends Fragment {
                                 String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
                                 Map<String, Object> lastTime = new HashMap<>();
                                 lastTime.put(chatname, currentTime);
-                                db.collection("chatRoom").document(chatOpen).update(lastTime);
+                                db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom").document(chatOpen).update(lastTime);
                                 ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl, imageMessage);
                                 chatRef.document("msg" + currentTime).set(item);
                             }
@@ -247,7 +247,7 @@ public class ChatRoomFragment extends Fragment {
                         String time = calendar.get(Calendar.HOUR_OF_DAY) + ":" + calendar.get(Calendar.MINUTE);
                         Map<String, Object> lastTime = new HashMap<>();
                         lastTime.put(chatname, currentTime);
-                        db.collection("chatRoom").document(chatOpen).update(lastTime);
+                        db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom").document(chatOpen).update(lastTime);
                         ChatMessageItem item = new ChatMessageItem(nickname, message, time, profileUrl, imageMessage);
                         chatRef.document("msg" + currentTime).set(item);
                     }

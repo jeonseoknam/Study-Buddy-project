@@ -86,7 +86,7 @@ public class ClassChatListFragment extends Fragment {
     ArrayList<ChatListItem> chatListItems = new ArrayList<>();
     ArrayList<ChatListItem> searchListItems = new ArrayList<>();
 
-    CollectionReference colRef = db.collection("chatRoom");
+    CollectionReference colRef;
 
     public ClassChatListFragment() {
         // Required empty public constructor
@@ -122,6 +122,9 @@ public class ClassChatListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_class_chat_list, container, false);
+
+        userPref = getContext().getSharedPreferences("userData",Context.MODE_PRIVATE);
+        colRef = db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom");
         loadChatList();
         // Inflate the layout for this fragment
         return view;
@@ -265,8 +268,6 @@ public class ClassChatListFragment extends Fragment {
                     for (int i = 0 ; i < list.size() ; i++){
                         chatListItems.add(new ChatListItem("","","",""));
                     }
-                    if (chatListItems.get(0).getName().equals("")) Log.d("logchk", "onEvent: " + chatListItems.get(3).getName());
-                    if (chatListItems.get(0).getName().isEmpty()) Log.d("logchk", "onEvent: " + chatListItems.get(3).getName());
                     List<String> itemsize = new ArrayList<>();
                     for (int sequence = 0; sequence < list.size() ; sequence++){
                         String chatList = list.get(sequence);

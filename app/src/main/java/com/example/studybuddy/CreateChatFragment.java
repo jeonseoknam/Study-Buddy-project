@@ -41,7 +41,7 @@ public class CreateChatFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-    private SharedPreferences chatNamePref;
+    private SharedPreferences chatNamePref, userPref;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
@@ -91,7 +91,7 @@ public class CreateChatFragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
         chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
-
+        userPref = getContext().getSharedPreferences("userData", Context.MODE_PRIVATE);
         HashMap<String, Object> chatSetting = new HashMap<>();
 
         ImageButton backButton = view.findViewById(R.id.backButton);
@@ -149,14 +149,15 @@ public class CreateChatFragment extends Fragment {
                 } else if (chatSetting.get("open").equals("privateChat") && chatCode.getText().toString().isEmpty()){
                     Toast.makeText(getContext(), "비공개의 경우 코드를 반드시 입력해야 합니다.", Toast.LENGTH_SHORT).show();
                 } else {
-                    CollectionReference colRef = db.collection("chatRoom").document(chatSetting.get("open").toString())
+                    CollectionReference colRef = db.collection(userPref.getString("School", "none")).document("chat")
+                            .collection("chatRoom").document(chatSetting.get("open").toString())
                         .collection("(실명)"+chatNameText.getText().toString()).document("chatSetting")
                         .collection("setting");
                     editor.putString("Name", "(실명)"+chatNameText.getText().toString());
                     editor.putString("open", chatSetting.get("open").toString());
                     if (chatSetting.get("name").equals("anonymous")) {
                         editor.putString("Name", "(익명)" + chatNameText.getText().toString());
-                        colRef = db.collection("chatRoom").document(chatSetting.get("open").toString())
+                        colRef = db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom").document(chatSetting.get("open").toString())
                                 .collection("(익명)"+chatNameText.getText().toString()).document("chatSetting")
                                 .collection("setting");
                     }
