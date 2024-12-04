@@ -84,6 +84,7 @@ public class SettingActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String newMajor = binding.editMajor.getText().toString();
                 String newNickname = binding.editNickName.getText().toString();
+                String newSchool = binding.schoolNameText.getText().toString();
                 String prevPassword = binding.prevPasswordEdit.getText().toString();
                 String newPassword = binding.newPasswordEdit.getText().toString();
 
@@ -109,6 +110,7 @@ public class SettingActivity extends AppCompatActivity {
                         editor.putString("Nickname",newNickname);
                     }
                     data.put("Password", newPassword);
+                    data.put("School", newSchool);
                     editor.putString("Password",newPassword);
                     editor.apply();
                     db.collection("userInfo").document(mAuth.getCurrentUser().getUid()).update(data);

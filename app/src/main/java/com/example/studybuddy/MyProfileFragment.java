@@ -73,6 +73,7 @@ public class MyProfileFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_my_profile, container, false);
 
+        mAuth = FirebaseAuth.getInstance();
 //공부 시간 통계 페이지 프래그먼트를 띄운다
         Button studytimeButton = view.findViewById(R.id.btn_studyTime);
         studytimeButton.setOnClickListener(v -> {

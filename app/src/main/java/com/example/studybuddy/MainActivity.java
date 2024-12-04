@@ -144,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
                         editor.putString("Major", (String)document.getData().get("Major"));
                         editor.putString("Nickname", (String)document.getData().get("Nickname"));
                         editor.putString("Profile", (String)document.getData().get("ProfileImage"));
+                        editor.putString("UID", (String) document.getData().get("UID"));
                         editor.apply();
 
                     } else {
