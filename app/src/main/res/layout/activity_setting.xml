@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+xmlns:tools="http://schemas.android.com/tools"
+android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:fillViewport="true"> <!-- 스크롤뷰가 화면 전체를 채우도록 설정 -->
+
+<RelativeLayout
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -14,8 +19,7 @@
         android:src="@drawable/baseline_account_circle_24"
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="20dp"
-        android:layout_alignBottom="@id/settingMain"/>
-
+        android:layout_alignBottom="@id/settingMain" />
 
     <TextView
         android:id="@+id/settingMain"
@@ -27,7 +31,7 @@
         android:gravity="center"
         android:layout_toRightOf="@id/accountImage"
         android:layout_marginLeft="10dp"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="20dp" />
 
     <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/profileChange"
@@ -40,7 +44,7 @@
         android:scaleType="centerCrop"
         android:background="@drawable/sample_profile"
         android:clipToOutline="true"
-        android:contentDescription="Profile Image"/>
+        android:contentDescription="Profile Image" />
 
     <TextView
         android:id="@+id/nameAnnounce"
@@ -50,7 +54,7 @@
         android:layout_alignLeft="@id/accountImage"
         android:layout_marginTop="30dp"
         android:text="이용자 명"
-        android:textSize="20dp"/>
+        android:textSize="20dp" />
 
     <TextView
         android:id="@+id/nameText"
@@ -65,7 +69,7 @@
         android:layout_marginLeft="25dp"
         android:layout_marginRight="20dp"
         android:paddingStart="15dp"
-        android:background="@drawable/rounded_edittext"/>
+        android:background="@drawable/rounded_edittext" />
 
     <TextView
         android:id="@+id/emailAnnounce"
@@ -238,5 +242,7 @@
         android:layout_centerHorizontal="true"
         android:text="설정완료"
         android:layout_marginTop="20dp"
-        android:textSize="20dp"/>
+        android:textSize="20dp" />
+
 </RelativeLayout>
+</ScrollView>
