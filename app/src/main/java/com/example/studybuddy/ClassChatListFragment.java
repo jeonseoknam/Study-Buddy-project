@@ -1,5 +1,7 @@
 package com.example.studybuddy;
 
+import static java.lang.Thread.sleep;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -50,6 +52,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -76,7 +79,7 @@ public class ClassChatListFragment extends Fragment {
 
     ChatListAdapter adapter;
 
-    private SharedPreferences chatNamePref;
+    private SharedPreferences chatNamePref, userPref;
     private RecyclerView recyclerView;
     private String chatAttribute = "공개 채팅방";
 
@@ -128,6 +131,7 @@ public class ClassChatListFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.chatListRecyclerView);
         chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
+        userPref = getContext().getSharedPreferences("userData",Context.MODE_PRIVATE);
 
         adapter = new ChatListAdapter(chatListItems);
         recyclerView.setAdapter(adapter);
@@ -261,34 +265,55 @@ public class ClassChatListFragment extends Fragment {
                     for (int i = 0 ; i < list.size() ; i++){
                         chatListItems.add(new ChatListItem("","","",""));
                     }
+                    if (chatListItems.get(0).getName().equals("")) Log.d("logchk", "onEvent: " + chatListItems.get(3).getName());
+                    if (chatListItems.get(0).getName().isEmpty()) Log.d("logchk", "onEvent: " + chatListItems.get(3).getName());
+                    List<String> itemsize = new ArrayList<>();
                     for (int sequence = 0; sequence < list.size() ; sequence++){
                         String chatList = list.get(sequence);
                         int finalSequence = sequence;
-                        colRef.document("privateChat").collection(chatList).document("msg"+data.get(chatList)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        colRef.document("privateChat").collection(chatList).document("chatSetting").collection("setting").document("user").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                if (task.isSuccessful()) {
-                                    DocumentSnapshot document = task.getResult();
-                                    if (document.exists()) {
-                                        Map<String, Object> list = document.getData();
-                                        String chatName = chatList;
-                                        String message = list.get("message").toString();
-                                        String time = list.get("time").toString();
-                                        String profile = list.get("profileUrl").toString();
-                                        ChatListItem item = new ChatListItem(chatName, message, time, profile);
+                                //Log.d("logchk", "onComplete: " + task.getResult().getData());
+                                Map<String, Object> fdata = task.getResult().getData();
+                                if (fdata.getOrDefault(userPref.getString("UID","none"),"none").equals(userPref.getString("UID","none"))){
+                                    itemsize.add(chatList);
+                                    colRef.document("privateChat").collection(chatList)
+                                            .document("msg"+data.get(chatList)).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                                @Override
+                                                public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                                    if (task.isSuccessful()) {
+                                                        DocumentSnapshot document = task.getResult();
+                                                        Log.d("logchk", "onComplete: " + document.getData());
+                                                        if (document.exists()) {
+                                                            Map<String, Object> flist = document.getData();
+                                                            String chatName = chatList;
+                                                            String message = flist.get("message").toString();
+                                                            String time = flist.get("time").toString();
+                                                            String profile = flist.get("profileUrl").toString();
+                                                            ChatListItem item = new ChatListItem(chatName, message, time, profile);
+                                                            chatListItems.add(finalSequence,item);
+                                                            Log.d("logchk", "onComplete: "+chatListItems.size());
+                                                            Log.d("logchk", "onComplete: " + itemsize.size());
+                                                            if (chatListItems.size() == list.size() + itemsize.size()){
+                                                                for (int i = 0; i < list.size() ; i++){
+                                                                    for (int j= 0 ; j <chatListItems.size() ; j++){
+                                                                        if (chatListItems.get(j).getName().equals("")){
+                                                                            chatListItems.remove(j);
+                                                                            break;
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                            adapter.notifyDataSetChanged();
 
-                                        chatListItems.remove(finalSequence);
-                                        chatListItems.add(finalSequence,item);
-                                        adapter.notifyDataSetChanged();
-                                        //           adapter.notifyItemInserted(chatListItems.size() - 1);
-                                        recyclerView.scrollToPosition(0);
-                                        Log.d("logchk", "onComplete: " + chatListItems.size());
+                                                        } else {
+                                                            Log.d("logchk", "No such document");
+                                                        }
+                                                    }
+                                                }
+                                            });
 
-                                    } else {
-                                        Log.d("logchk", "No such document");
-                                    }
-                                } else {
-                                    Log.d("logchk", "get failed with ", task.getException());
                                 }
                             }
                         });
