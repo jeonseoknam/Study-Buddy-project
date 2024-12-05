@@ -1,3 +1,4 @@
+
 package com.example.studybuddy;
 
 public class UserTimerModel {
@@ -35,4 +36,3 @@ public class UserTimerModel {
         this.elapsedTime = elapsedTime;
     }
 }
-
