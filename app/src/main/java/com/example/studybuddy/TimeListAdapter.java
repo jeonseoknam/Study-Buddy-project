@@ -54,6 +54,7 @@ public class TimeListAdapter extends RecyclerView.Adapter<TimeListAdapter.ViewHo
         // SharedPreferences 사용
         SharedPreferences chatIdPref = context.getSharedPreferences("chatName", Context.MODE_PRIVATE);
         String savedChatName = chatIdPref.getString("Name", "defaultChatName");
+        String chatNameSet = chatIdPref.getString("open","none");
 
         // 랭킹 등록 버튼
         holder.rankingRegisterButton.setOnClickListener(v -> {
@@ -62,13 +63,11 @@ public class TimeListAdapter extends RecyclerView.Adapter<TimeListAdapter.ViewHo
                 return;
             }
 
-
-
             // Firestore 경로 설정
             CollectionReference rankingRef = firestore.collection("soongsil")
                     .document("chat")
                     .collection("chatRoom")
-                    .document("singleChat")
+                    .document(chatNameSet)
                     .collection(savedChatName)
                     .document("timerRecords")
                     .collection("records");
