@@ -151,9 +151,9 @@ public class ChatRoomFragment extends Fragment {
                     if (value != null && !value.isEmpty()) {
                         DocumentSnapshot snapshot = documentChange.getDocument();
                         Map<String, Object> msg = snapshot.getData();
-                        String name = msg.get("name").toString();
-                        String message = msg.get("message").toString();
-                        String time = msg.get("time").toString();
+                        String name = (String) msg.get("name");
+                        String message = (String) msg.get("message");
+                        String time = (String) msg.get("time");
                         String profileUrl = (String) msg.get("profileUrl");
                         String imageMessage = (String) msg.get("imageMessage");
 
