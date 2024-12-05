@@ -72,10 +72,34 @@
             android:background="@drawable/rounded_edittext"/>
 
         <TextView
-            android:id="@+id/classCodeText"
+            android:id="@+id/codeText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/editTextChatRoomName"
+            android:layout_alignLeft="@id/accountImage"
+            android:layout_marginTop="20dp"
+            android:text="과목 선택"
+            android:textSize="20dp"/>
+
+        <Spinner
+            android:id="@+id/editCodeSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/codeText"
+            android:inputType="text"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginTop="10dp"
+            android:paddingStart="15dp"
+            android:spinnerMode="dropdown"
+            android:popupBackground="@drawable/rounded_edittext"
+            android:background="@drawable/rounded_edittext"/>
+
+        <TextView
+            android:id="@+id/classCodeText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/editCodeSpinner"
             android:layout_alignLeft="@id/accountImage"
             android:layout_marginTop="20dp"
             android:text="채팅방 코드 입력(비공개만)"

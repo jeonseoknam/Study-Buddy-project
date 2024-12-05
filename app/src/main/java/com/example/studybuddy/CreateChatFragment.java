@@ -12,11 +12,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.RadioButton;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
@@ -41,7 +44,9 @@ public class CreateChatFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
+    private String currentClass;
     private SharedPreferences chatNamePref, userPref;
+    private Spinner spinner;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
 
@@ -92,6 +97,29 @@ public class CreateChatFragment extends Fragment {
         db = FirebaseFirestore.getInstance();
         chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
         userPref = getContext().getSharedPreferences("userData", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = chatNamePref.edit();
+
+        EditText chatNameText = view.findViewById(R.id.editTextChatRoomName);
+        EditText chatCode = view.findViewById(R.id.editClassCode);
+
+        spinner = view.findViewById(R.id.editCodeSpinner);
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getContext(), R.layout.spinner_item2, getResources().getStringArray(R.array.class_references));
+        spinnerAdapter.setDropDownViewResource(R.layout.spinner_item2);
+        spinner.setAdapter(spinnerAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                currentClass = (String) parent.getItemAtPosition(position);
+                Log.d("logchk", "onItemSelected: " + currentClass);
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                currentClass = (String) parent.getItemAtPosition(0);
+                Log.d("logchk", "onItemSelected: " + currentClass);
+            }
+        });
+
+
         HashMap<String, Object> chatSetting = new HashMap<>();
 
         ImageButton backButton = view.findViewById(R.id.backButton);
@@ -103,10 +131,7 @@ public class CreateChatFragment extends Fragment {
                         .commit();
             }
         });
-        EditText chatNameText = view.findViewById(R.id.editTextChatRoomName);
-        EditText chatCode = view.findViewById(R.id.editClassCode);
 
-        SharedPreferences.Editor editor = chatNamePref.edit();
 
         RadioButton anonymousButton = view.findViewById(R.id.radioButtonAnonymous);
         RadioButton realNameButton = view.findViewById(R.id.radioButtonRealName);
@@ -144,21 +169,24 @@ public class CreateChatFragment extends Fragment {
 
                 if (chatNameText.getText().toString().isEmpty()){
                     Toast.makeText(getContext(), "채팅방 이름은 공백일 수 없습니다.", Toast.LENGTH_SHORT).show();
-                } else if(chatSetting.size() != 2){
+                }else if (currentClass.equals("과목 없음")) {
+                    Toast.makeText(getContext(), "과목을 선택해야 합니다.", Toast.LENGTH_SHORT).show();
+                }else if(chatSetting.size() != 2){
                     Toast.makeText(getContext(), "모든 속성을 선택해야 합니다.", Toast.LENGTH_SHORT).show();
                 } else if (chatSetting.get("open").equals("privateChat") && chatCode.getText().toString().isEmpty()){
                     Toast.makeText(getContext(), "비공개의 경우 코드를 반드시 입력해야 합니다.", Toast.LENGTH_SHORT).show();
                 } else {
+                    String chatClassName = currentClass +"/"+chatNameText.getText().toString();
                     CollectionReference colRef = db.collection(userPref.getString("School", "none")).document("chat")
                             .collection("chatRoom").document(chatSetting.get("open").toString())
-                        .collection("(실명)"+chatNameText.getText().toString()).document("chatSetting")
+                        .collection("(실명)"+chatClassName).document("chatSetting")
                         .collection("setting");
-                    editor.putString("Name", "(실명)"+chatNameText.getText().toString());
+                    editor.putString("Name", "(실명)"+chatClassName);
                     editor.putString("open", chatSetting.get("open").toString());
                     if (chatSetting.get("name").equals("anonymous")) {
-                        editor.putString("Name", "(익명)" + chatNameText.getText().toString());
+                        editor.putString("Name", "(익명)" + chatClassName);
                         colRef = db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom").document(chatSetting.get("open").toString())
-                                .collection("(익명)"+chatNameText.getText().toString()).document("chatSetting")
+                                .collection("(익명)"+chatClassName).document("chatSetting")
                                 .collection("setting");
                     }
                     editor.apply();
@@ -174,8 +202,6 @@ public class CreateChatFragment extends Fragment {
                             .replace(R.id.fragment_container, new ChatRoomFragment())
                             .commit();
                 }
-
-
             }
         });
     }

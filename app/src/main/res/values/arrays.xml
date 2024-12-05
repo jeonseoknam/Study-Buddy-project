@@ -6,4 +6,17 @@
         <item>인정된 목표</item>
         <item>미인정된 목표</item>
     </array>
+    <array name="school_references">
+        <item>학교 선택</item>
+        <item>soongsil</item>
+        <item>seoul</item>
+    </array>
+
+    <array name="class_references">
+        <item>과목 없음</item>
+        <item>컴퓨터 네트워크</item>
+        <item>컴퓨터구조</item>
+        <item>알고리즘</item>
+        <item>사용자인터페이스및실습</item>
+    </array>
 </resources>
