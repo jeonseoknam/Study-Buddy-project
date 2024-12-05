@@ -79,6 +79,7 @@ public class ChatRoomMenuFragment extends Fragment {
                             chatCodeButton.setText("초대코드 : " + chatCode);
                         }
                     });
+            userList.clear();
             chatRef.document("chatSetting").collection("setting")
                     .document("user").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                         @Override
