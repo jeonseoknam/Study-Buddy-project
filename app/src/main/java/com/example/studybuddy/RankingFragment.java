@@ -71,7 +71,7 @@ public class RankingFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // 선택되지 않은 경우 처리 (필요 시)
+                // 선택되지 않은 경우 처리
             }
         });
 
@@ -79,47 +79,62 @@ public class RankingFragment extends Fragment {
     }
 
     private void fetchRankingData(String sortOption) {
+        long currentTime = System.currentTimeMillis();
+        long startTime = getStartTimeForSortOption(sortOption, currentTime);
+
         firestore.collection("study_sessions")
+                .whereGreaterThanOrEqualTo("timestamp", startTime) // 선택한 기간 데이터만 가져오기
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     Map<String, Long> userTotalTimes = new HashMap<>();
-                    long currentTime = System.currentTimeMillis();
+
+                    // 기존 리스트 초기화
+                    rankingList.clear();
 
                     // Firestore의 모든 문서 순회
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         try {
-                            // timestamp 필드 안전하게 가져오기
-                            Object timestampObj = document.get("timestamp");
-                            if (timestampObj instanceof Number) {
-                                Long timestamp = ((Number) timestampObj).longValue();
+                            String userId = document.getString("user_id");
+                            String elapsedTime = document.getString("elapsed_time");
 
-                                // 시간 범위 필터링
-                                if (isWithinTimeRange(sortOption, timestamp, currentTime)) {
-                                    String userId = document.getString("user_id");
-                                    String elapsedTime = document.getString("elapsed_time");
+                            // 시간 데이터 파싱
+                            String[] timeParts = elapsedTime.split(":");
+                            long sessionTimeInSeconds = Integer.parseInt(timeParts[0]) * 60
+                                    + Integer.parseInt(timeParts[1]);
 
-                                    String[] timeParts = elapsedTime.split(":");
-                                    long sessionTimeInSeconds = Integer.parseInt(timeParts[0]) * 60
-                                            + Integer.parseInt(timeParts[1]);
-
-                                    userTotalTimes.put(userId, userTotalTimes.getOrDefault(userId, 0L) + sessionTimeInSeconds);
-                                }
-                            } else {
-                                Log.e("RankingFragment", "Invalid timestamp type for document ID: " + document.getId());
-                                continue; // timestamp가 잘못된 경우 해당 문서 무시
-                            }
+                            // 유저별 총 시간 합산
+                            userTotalTimes.put(userId, userTotalTimes.getOrDefault(userId, 0L) + sessionTimeInSeconds);
                         } catch (Exception e) {
                             Log.e("RankingFragment", "Error processing document ID: " + document.getId(), e);
                         }
                     }
 
-                    // 닉네임으로 변환
+                    // 중복 제거 후 닉네임 매칭
                     convertUserIdToNickname(userTotalTimes);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "랭킹 데이터를 가져오지 못했습니다: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
+
+    private long getStartTimeForSortOption(String sortOption, long currentTime) {
+        long oneDayInMillis = 24 * 60 * 60 * 1000;
+        long oneWeekInMillis = 7 * oneDayInMillis;
+        long oneMonthInMillis = 30 * oneDayInMillis;
+
+        switch (sortOption) {
+            case "하루":
+                return currentTime - oneDayInMillis;
+            case "1주":
+                return currentTime - oneWeekInMillis;
+            case "1달":
+                return currentTime - oneMonthInMillis;
+            default:
+                return 0; // 모든 데이터 포함
+        }
+    }
+
 
     private void convertUserIdToNickname(Map<String, Long> userTotalTimes) {
         List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
