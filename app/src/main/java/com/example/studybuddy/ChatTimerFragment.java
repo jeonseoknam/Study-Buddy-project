@@ -109,8 +109,15 @@ public class ChatTimerFragment extends Fragment {
 
         rankingButton.setOnClickListener(v -> {
             Toast.makeText(getContext(), "랭킹 페이지로 이동합니다.", Toast.LENGTH_SHORT).show();
+
+            ChatTimerRankingFragment fragment = new ChatTimerRankingFragment();
+            Bundle args = new Bundle();
+            args.putString("chatRoomId", chatRoomId);
+            args.putString("nickname", nickName);
+            fragment.setArguments(args);
+
             requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new RankingFragment())
+                    .replace(R.id.fragment_container, new ChatTimerRankingFragment())
                     .addToBackStack(null)
                     .commit();
         });
