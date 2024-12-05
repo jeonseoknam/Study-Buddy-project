@@ -94,6 +94,7 @@ public class ChatRoomFragment extends Fragment {
         Log.d("logchk", "onCreateView: "+ chatname);
         chatTitle.setText(chatname);
 
+        messageItems.clear();
         return view;
     }
 
