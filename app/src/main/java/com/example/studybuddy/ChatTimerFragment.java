@@ -4,6 +4,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -25,6 +26,9 @@ public class ChatTimerFragment extends Fragment {
     private TextView timerText;         // 시간 표시 텍스트
     private ProgressBar circularProgress; // 원형 ProgressBar
     private Button deleteButton, pauseButton, registerButton, rankingButton, historyButton;
+    private String chatID;
+    private String nickName, chatOpen, chatCode = "";
+    private SharedPreferences userPref;
 
     private Handler handler = new Handler(Looper.getMainLooper());
     private int elapsedTime = 0; // 경과 시간 (단위: 초)
@@ -32,6 +36,7 @@ public class ChatTimerFragment extends Fragment {
 
     private TimerService timerService;
     private boolean isServiceBound = false;
+    TextView tv_chat_timer_title;
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
@@ -84,6 +89,7 @@ public class ChatTimerFragment extends Fragment {
         registerButton = view.findViewById(R.id.register_button);
         rankingButton = view.findViewById(R.id.ranking_button);
         historyButton = view.findViewById(R.id.history_button);
+        tv_chat_timer_title = view.findViewById(R.id.tv_chat_timer_title);
 
         // 초기 타이머 설정
         updateTimer();
@@ -92,6 +98,10 @@ public class ChatTimerFragment extends Fragment {
         pauseButton.setOnClickListener(v -> toggleTimer());
         deleteButton.setOnClickListener(v -> resetTimer());
 
+        String chatRoomId = getArguments().getString("chatRoomId");
+        tv_chat_timer_title.setText(chatRoomId+"\n타이머");
+
+
         registerButton.setOnClickListener(v -> {
             Toast.makeText(getContext(), "공부 시간을 저장합니다.", Toast.LENGTH_SHORT).show();
             // 여기에 Firestore 저장 로직을 추가하거나 새로운 기능을 추가할 수 있습니다.
@@ -99,14 +109,27 @@ public class ChatTimerFragment extends Fragment {
 
         rankingButton.setOnClickListener(v -> {
             Toast.makeText(getContext(), "랭킹 페이지로 이동합니다.", Toast.LENGTH_SHORT).show();
+
+            ChatTimerRankingFragment fragment = new ChatTimerRankingFragment();
+            Bundle args = new Bundle();
+            args.putString("chatRoomId", chatRoomId);
+            args.putString("nickname", nickName);
+            fragment.setArguments(args);
+
             requireActivity().getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragment_container, new RankingFragment())
+                    .replace(R.id.fragment_container, new ChatTimerRankingFragment())
                     .addToBackStack(null)
                     .commit();
         });
 
         historyButton.setOnClickListener(v -> {
             Toast.makeText(getContext(), "나의 공부 기록 페이지로 이동합니다",Toast.LENGTH_SHORT).show();
+
+            TimeListFragment fragment = new TimeListFragment();
+            Bundle args = new Bundle();
+            args.putString("chatRoomId", chatRoomId);
+            args.putString("nickname", nickName);
+            fragment.setArguments(args);
 
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new TimeListFragment())

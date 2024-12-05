@@ -52,6 +52,9 @@ public class MyTimerFragment extends Fragment {
     private boolean isServiceBound = false;
 
 
+
+
+
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -123,6 +126,7 @@ public class MyTimerFragment extends Fragment {
         registerButton = view.findViewById(R.id.register_button);
         rankingButton = view.findViewById(R.id.ranking_button);
         historyButton = view.findViewById(R.id.history_button);
+
 
 
         // 초기 타이머 설정

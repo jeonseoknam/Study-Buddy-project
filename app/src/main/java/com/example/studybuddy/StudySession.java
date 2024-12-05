@@ -1,15 +1,14 @@
 package com.example.studybuddy;
 
 public class StudySession {
-    private String id; // Firestore 문서 ID
-    private String user_id;
-    private String elapsed_time;
-    private String subject_name;
+    private String id;
+    private String user_id; // Firestore의 필드 이름과 일치
+    private String elapsed_time; // Firestore의 필드 이름과 일치
+    private String subject_name; // Firestore의 필드 이름과 일치
     private String memo;
-    private long timestamp;
 
-    // 기본 생성자 (Firestore에서 필요)
-    public StudySession() {}
+    public StudySession() {
+    }
 
     public String getId() {
         return id;
@@ -49,13 +48,5 @@ public class StudySession {
 
     public void setMemo(String memo) {
         this.memo = memo;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
     }
 }

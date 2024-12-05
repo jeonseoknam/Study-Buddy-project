@@ -1,9 +1,14 @@
 package com.example.studybuddy;
 
+import static java.security.AccessController.getContext;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,6 +32,10 @@ public class TimeListFragment extends Fragment {
     private List<StudySession> timeList; // StudySession 객체 리스트
     private FirebaseFirestore firestore;
     private FirebaseAuth firebaseAuth;
+    String chatRoomId;
+    Button ranking_register_button;
+    private SharedPreferences chatNamePref;
+
 
     @Nullable
     @Override
@@ -35,15 +44,31 @@ public class TimeListFragment extends Fragment {
 
         recyclerView = view.findViewById(R.id.recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
         firestore = FirebaseFirestore.getInstance();
         firebaseAuth = FirebaseAuth.getInstance();
         timeList = new ArrayList<>();
+
+
+        //채팅방 이름 전달받기
+        chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
+        
+        
+        // chatRoomId 전달 받기
+        if (getArguments() != null) {
+            chatRoomId = getArguments().getString("chatRoomId", "(익명)qwerqwerwerqwe");
+        }
 
         // Firestore에서 데이터 읽어오기
         fetchStudySessions();
 
         return view;
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+
     }
 
     private void fetchStudySessions() {
@@ -62,7 +87,7 @@ public class TimeListFragment extends Fragment {
                     }
 
                     // RecyclerView Adapter 초기화
-                    adapter = new TimeListAdapter(timeList, firestore);
+                    adapter = new TimeListAdapter(timeList,userId, firestore, getContext());
                     recyclerView.setAdapter(adapter);
                 })
                 .addOnFailureListener(e -> {
