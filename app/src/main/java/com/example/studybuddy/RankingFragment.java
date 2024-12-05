@@ -15,6 +15,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -110,21 +113,39 @@ public class RankingFragment extends Fragment {
                         }
                     }
 
-                    // Map을 List로 변환 및 정렬
-                    rankingList.clear();
-                    for (Map.Entry<String, Long> entry : userTotalTimes.entrySet()) {
-                        rankingList.add(new RankingItem(entry.getKey(), entry.getValue()));
-                    }
-                    rankingList.sort((o1, o2) -> Long.compare(o2.getTotalTime(), o1.getTotalTime()));
-
-                    // RecyclerView Adapter에 데이터 설정
-                    adapter = new RankingAdapter(rankingList);
-                    recyclerView.setAdapter(adapter);
+                    // 닉네임으로 변환
+                    convertUserIdToNickname(userTotalTimes);
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(getContext(), "랭킹 데이터를 가져오지 못했습니다: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
+    private void convertUserIdToNickname(Map<String, Long> userTotalTimes) {
+        List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
+
+        // Firestore에서 userId -> Nickname 매핑
+        for (String userId : userTotalTimes.keySet()) {
+            Task<DocumentSnapshot> task = firestore.collection("userInfo")
+                    .document(userId)
+                    .get()
+                    .addOnSuccessListener(documentSnapshot -> {
+                        String nickname = documentSnapshot.getString("Nickname");
+                        if (nickname != null) {
+                            rankingList.add(new RankingItem(nickname, userTotalTimes.get(userId)));
+                        }
+                    });
+            tasks.add(task);
+        }
+
+        // 모든 작업 완료 후 RecyclerView 업데이트
+        Tasks.whenAllComplete(tasks).addOnCompleteListener(task -> {
+            rankingList.sort((o1, o2) -> Long.compare(o2.getTotalTime(), o1.getTotalTime()));
+            adapter = new RankingAdapter(rankingList);
+            recyclerView.setAdapter(adapter);
+        });
+    }
+
 
 
 
