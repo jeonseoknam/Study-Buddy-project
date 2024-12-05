@@ -1,11 +1,16 @@
 package com.example.studybuddy;
 
+import static java.security.AccessController.getContext;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
@@ -24,6 +29,7 @@ public class SignupActivity extends AppCompatActivity {
     private FirebaseFirestore db;
 
     private String name, school, nickname, email, password;
+    private Spinner spinner;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,11 +46,27 @@ public class SignupActivity extends AppCompatActivity {
                 performSignUp();
             }
         });
+
+        spinner = findViewById(R.id.schoolSelectSpinner);
+        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(getBaseContext(),R.layout.spinner_item2, getResources().getStringArray(R.array.school_references));
+        spinnerAdapter.setDropDownViewResource(R.layout.spinner_item2);
+        spinner.setAdapter(spinnerAdapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                school = (String) parent.getItemAtPosition(position);
+                Log.d("logchk", "onItemSelected: "+school);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
     }
 
     private void performSignUp() {
         name = ((EditText)findViewById(R.id.editTextUsername)).getText().toString();
-        school = ((EditText)findViewById(R.id.editTextSchoolName)).getText().toString();
         nickname = ((EditText)findViewById(R.id.editTextNickName)).getText().toString();
         email = ((EditText)findViewById(R.id.editTextEmail2)).getText().toString();
         password = ((EditText) findViewById(R.id.editTextPassword2)).getText().toString();
@@ -56,8 +78,9 @@ public class SignupActivity extends AppCompatActivity {
         userdata.put("Nickname", nickname);
         userdata.put("Email", email);
         userdata.put("Password", password);
-
-        if ((name != null && !name.isEmpty()) &&
+        if (school.equals("학교 선택")){
+            Toast.makeText(this, "학교를 선택해야 합니다.", Toast.LENGTH_SHORT).show();
+        }else if ((name != null && !name.isEmpty()) &&
                 (school != null && !school.isEmpty()) &&
                 (nickname != null && !nickname.isEmpty()) &&
                 (email != null && !email.isEmpty()) &&
