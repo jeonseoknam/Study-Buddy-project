@@ -1,37 +1,54 @@
 package com.example.studybuddy;
 
+import static com.example.studybuddy.R.*;
+
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+import com.example.studybuddy.databinding.FragmentChatRoomMenuBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Objects;
+
 public class ChatRoomMenuFragment extends Fragment {
 
     private String chatID;
-    private String nickName, chatOpen, chatCode = "";
+    private String nickName, chatOpen, chatCode = "", nameSet;
     private SharedPreferences userPref;
     private SharedPreferences chatNamePref;
     private FirebaseFirestore db;
     private Button chatCodeButton;
+    private TextView userlisttext;
+    UserAdapter adapter;
+    ArrayList<ChatUserItem> userList = new ArrayList<>();
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,7 +67,7 @@ public class ChatRoomMenuFragment extends Fragment {
         nickName = userPref.getString("Nickname", "none");
 
         chatCodeButton = view.findViewById(R.id.btn_Invite);
-
+        userlisttext = view.findViewById(R.id.listText);
         if (chatOpen.equals("privateChat")) {
             CollectionReference chatRef = db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom").document(chatOpen).collection(chatID);
             chatRef.document("chatSetting").collection("setting")
@@ -58,15 +75,40 @@ public class ChatRoomMenuFragment extends Fragment {
                         @Override
                         public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                             chatCode = task.getResult().getData().get("chatCode").toString();
+                            nameSet = task.getResult().getData().get("name").toString();
                             chatCodeButton.setText("초대코드 : " + chatCode);
+                        }
+                    });
+            chatRef.document("chatSetting").collection("setting")
+                    .document("user").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                        @Override
+                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                            Collection<Object> list = task.getResult().getData().values();
+                            for (Object lists : list){
+                                Log.d("logchk", "onComplete: "+lists);
+                                db.collection("userInfo").document(lists.toString()).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                        Map<String, Object> userdata = task.getResult().getData();
+                                        String profile = (String)userdata.get("ProfileImage");
+                                        String nameornick = "";
+                                        if (nameSet.equals("anonymous"))
+                                            nameornick = (String) userdata.get("Nickname");
+                                        else if (nameSet.equals("realName"))
+                                            nameornick = (String) userdata.get("Name");
+                                        userList.add(new ChatUserItem(nameornick,profile));
+                                        adapter.notifyDataSetChanged();
+                                    }
+                                });
+                            }
                         }
                     });
         } else if (chatOpen.equals("singleChat")) {
             chatCodeButton.setVisibility(View.GONE);
+            userlisttext.setVisibility(View.GONE);
         }
 
         return view;
-
     }
 
     @Override
@@ -82,6 +124,11 @@ public class ChatRoomMenuFragment extends Fragment {
                         .commit();
             }
         });
+
+        RecyclerView recyclerView = view.findViewById(R.id.userRecyclerView);
+        adapter = new UserAdapter(userList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(adapter);
 
         TextView chatTitle = view.findViewById(R.id.chatTitleText);
         chatTitle.setText(chatID);
@@ -144,4 +191,49 @@ public class ChatRoomMenuFragment extends Fragment {
 
     }
 
+
+    private class UserViewHolder extends RecyclerView.ViewHolder {
+        ImageView profile;
+        TextView name;
+
+        public UserViewHolder(@NonNull View itemView) {
+            super(itemView);
+            this.profile = itemView.findViewById(R.id.profileImage);
+            this.name = itemView.findViewById(R.id.username);
+        }
+    }
+
+    private class UserAdapter extends RecyclerView.Adapter<UserViewHolder> {
+        private ArrayList<ChatUserItem> userItems;
+
+        public UserAdapter(ArrayList<ChatUserItem> userItems) {
+            this.userItems = userItems;
+        }
+
+        @NonNull
+        @Override
+        public UserViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_chatuser,parent,false);
+            return new UserViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
+            ChatUserItem item = userItems.get(position);
+            holder.name.setText(item.getName());
+            Log.d("logchk", "onBindViewHolder: "+ item.getName());
+            if (item.profileUri != null)
+                Glide.with(getActivity()).load(item.profileUri).into(holder.profile);
+
+        }
+        @Override
+        public int getItemCount() {
+            return userItems.size();
+        }
+
+
+
+    }
 }
+
+
