@@ -23,9 +23,6 @@
         <activity android:name=".GoalRegistrationActivity"
             android:exported="false"/>
         <activity
-            android:name=".GoalRegistrationActivity"
-            android:exported="false" />
-        <activity
             android:name=".ScheduleListActivity"
             android:exported="false" />
         <activity

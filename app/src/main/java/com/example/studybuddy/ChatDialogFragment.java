@@ -7,7 +7,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
 
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,21 +18,20 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.studybuddy.databinding.FragmentChatDialogBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FragmentChatDialog extends DialogFragment {
+public class ChatDialogFragment extends DialogFragment {
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -45,12 +43,12 @@ public class FragmentChatDialog extends DialogFragment {
     private String mParam1;
     private String mParam2;
 
-    public FragmentChatDialog() {
+    public ChatDialogFragment() {
         // Required empty public constructor
     }
 
-    public static FragmentChatDialog newInstance(String param1, String param2) {
-        FragmentChatDialog fragment = new FragmentChatDialog();
+    public static ChatDialogFragment newInstance(String param1, String param2) {
+        ChatDialogFragment fragment = new ChatDialogFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -141,6 +139,7 @@ public class FragmentChatDialog extends DialogFragment {
                             editor.putString("Name",codeList.get(code).toString());
                             editor.putString("open","privateChat");
                             editor.commit();
+                            saveNotification(mAuth.getCurrentUser().getUid(),codeList.get(code).toString());
                             requireActivity().getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.fragment_container, new ChatRoomFragment())
                                     .commit();
@@ -161,6 +160,18 @@ public class FragmentChatDialog extends DialogFragment {
             }
         });
 
-
     }
+    private void saveNotification(String userId, String chatRoomId) {
+        Map<String, Object> notificationData = new HashMap<>();
+        notificationData.put("userId", userId); // 알림을 받을 사용자 ID (목표 작성자)
+        notificationData.put("message", "채팅방에 참가하였습니다");
+        notificationData.put("chatRoomId", chatRoomId);
+        notificationData.put("timestamp", FieldValue.serverTimestamp());
+
+        db.collection("notifications")
+                .add(notificationData)
+                .addOnSuccessListener(documentReference -> Log.d("logchk", "Notification saved successfully!"))
+                .addOnFailureListener(e -> Log.e("logchk", "Failed to save notification: " + e.getMessage()));
+    }
+
 }

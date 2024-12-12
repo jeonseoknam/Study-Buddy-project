@@ -73,11 +73,12 @@ public class MyNotificationsFragment extends Fragment {
                     if (queryDocumentSnapshots != null && !queryDocumentSnapshots.isEmpty()) {
                         notificationList.clear(); // 기존 데이터 초기화
                         for (DocumentSnapshot document : queryDocumentSnapshots) {
+                            String chatName = document.getString("chatRoomId");
                             String title = document.getString("title");
                             String message = document.getString("message");
 
                             // 알림 데이터 추가
-                            notificationList.add(title + ": " + message);
+                            notificationList.add("채팅방 \""+chatName +"\"\n" + "" + message);
                         }
                         // RecyclerView 갱신
                         notificationAdapter.notifyDataSetChanged();
