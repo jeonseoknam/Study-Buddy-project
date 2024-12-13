@@ -7,8 +7,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContentInfo;
+import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -35,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
+    private long initTime;
 
     private SharedPreferences userPref;
 
@@ -124,6 +127,15 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK){
+            AppExitDialogFragment dialogFragment = new AppExitDialogFragment();
+            dialogFragment.show(getSupportFragmentManager(),"tag");
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
     private void updateUserData(){
         FirebaseUser user = mAuth.getCurrentUser();
