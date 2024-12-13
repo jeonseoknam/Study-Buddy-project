@@ -31,15 +31,16 @@ import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Objects;
 import java.util.PrimitiveIterator;
 
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-    private long initTime;
 
     private SharedPreferences userPref;
+    private BottomNavigationView bottomNavigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
 
         updateUserData();
 
-        userPref = getSharedPreferences("userData", Context.MODE_PRIVATE);
 
 
         // TimerService 시작
@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
             startService(serviceIntent);
         }
 
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottom_navigation);
+        bottomNavigationView = findViewById(R.id.bottom_navigation);
         if (savedInstanceState == null) {
             transferTo(ClassChatListFragment.newInstance("param1", "param2"));
             bottomNavigationView.setSelectedItemId(R.id.chatPage);
@@ -102,9 +102,31 @@ public class MainActivity extends AppCompatActivity {
         bottomNavigationView.setOnItemReselectedListener(new NavigationBarView.OnItemReselectedListener() {
             @Override
             public void onNavigationItemReselected(@NonNull MenuItem item) {
+                int itemId = item.getItemId();
+
+                if (itemId == R.id.chatPage) {
+                    transferTo(ClassChatListFragment.newInstance("param1", "param2"));
+                }
 
             }
         });
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK){
+            Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+            if (currentFragment instanceof ClassChatListFragment ||
+            currentFragment instanceof MyTimerFragment ||
+            currentFragment instanceof MyNotificationsFragment ||
+            currentFragment instanceof MyProfileFragment) {
+                AppExitDialogFragment dialogFragment = new AppExitDialogFragment();
+                dialogFragment.show(getSupportFragmentManager(), "tag");
+                return true;
+            }
+        }
+        return super.onKeyDown(keyCode, event);
     }
 
     private void transferTo(Fragment fragment) {
@@ -127,15 +149,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK){
-            AppExitDialogFragment dialogFragment = new AppExitDialogFragment();
-            dialogFragment.show(getSupportFragmentManager(),"tag");
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
-    }
 
     private void updateUserData(){
         FirebaseUser user = mAuth.getCurrentUser();
@@ -157,8 +170,7 @@ public class MainActivity extends AppCompatActivity {
                         editor.putString("Nickname", (String)document.getData().get("Nickname"));
                         editor.putString("Profile", (String)document.getData().get("ProfileImage"));
                         editor.putString("UID", (String) document.getData().get("UID"));
-                        editor.apply();
-
+                        editor.commit();
                     } else {
                         Log.d("logchk", "No such document");
                     }
