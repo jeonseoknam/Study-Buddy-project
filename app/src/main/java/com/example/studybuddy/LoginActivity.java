@@ -39,7 +39,7 @@ public class LoginActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_login);
 
-
+        userPref = getSharedPreferences("userData", MODE_PRIVATE);
         mAuth = FirebaseAuth.getInstance();
 
         Button loginButton = findViewById(R.id.btn_Login);

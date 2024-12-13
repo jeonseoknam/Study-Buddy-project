@@ -106,8 +106,17 @@ public class ClassChatListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_class_chat_list, container, false);
+        TextView schoolNameView = view.findViewById(R.id.schoolChatNameText);
 
         userPref = getContext().getSharedPreferences("userData",Context.MODE_PRIVATE);
+        String schoolName = userPref.getString("School","none");
+
+        if (schoolName.equals("soongsil")){
+            schoolNameView.setText("숭실대학교 채팅");
+        } else if (schoolName.equals("seoul")) {
+            schoolNameView.setText("서울대학교 채팅");
+        }
+
         colRef = db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom");
         loadChatList();
         // Inflate the layout for this fragment

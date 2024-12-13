@@ -15,6 +15,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.window.OnBackInvokedDispatcher;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,7 +25,7 @@ import com.google.firebase.auth.FirebaseAuth;
  * Use the {@link MyProfileFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MyProfileFragment extends Fragment {
+public class MyProfileFragment extends Fragment{
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -73,6 +74,17 @@ public class MyProfileFragment extends Fragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_my_profile, container, false);
 
+        TextView schoolNameView = view.findViewById(R.id.schoolChatNameText);
+
+        userPref = getContext().getSharedPreferences("userData",Context.MODE_PRIVATE);
+        String schoolName = userPref.getString("School","none");
+
+        if (schoolName.equals("soongsil")){
+            schoolNameView.setText("숭실대학교 채팅");
+        } else if (schoolName.equals("seoul")) {
+            schoolNameView.setText("서울대학교 채팅");
+        }
+
         mAuth = FirebaseAuth.getInstance();
 //공부 시간 통계 페이지 프래그먼트를 띄운다
         Button studytimeButton = view.findViewById(R.id.btn_studyTime);
@@ -96,10 +108,11 @@ public class MyProfileFragment extends Fragment {
         return view;
     }
 
+
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        userPref = getContext().getSharedPreferences("userData", Context.MODE_PRIVATE);
 
         ImageView profile = view.findViewById(R.id.profile_image);
         if (userPref.getString("Profile",null) != null){
@@ -124,8 +137,13 @@ public class MyProfileFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mAuth.signOut();
-                getActivity().finish();
+                userPref.edit().clear();
+                userPref.edit().commit();
+                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
             }
         });
     }
+
 }

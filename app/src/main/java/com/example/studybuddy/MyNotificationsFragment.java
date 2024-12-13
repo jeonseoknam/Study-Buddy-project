@@ -1,5 +1,7 @@
 package com.example.studybuddy;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -28,6 +31,7 @@ public class MyNotificationsFragment extends Fragment {
     private RecyclerView recyclerView;
     private List<String> notificationList;
     private NotificationAdapter notificationAdapter;
+    private SharedPreferences userPref;
 
     private FirebaseFirestore db; // Firestore 객체 선언
     private ListenerRegistration notificationListener; // 리스너 등록을 관리할 변수
@@ -53,6 +57,16 @@ public class MyNotificationsFragment extends Fragment {
         notificationAdapter = new NotificationAdapter(notificationList);
         recyclerView.setAdapter(notificationAdapter);
 
+        TextView schoolNameView = view.findViewById(R.id.schoolChatNameText);
+
+        userPref = getContext().getSharedPreferences("userData", Context.MODE_PRIVATE);
+        String schoolName = userPref.getString("School","none");
+
+        if (schoolName.equals("soongsil")){
+            schoolNameView.setText("숭실대학교 채팅");
+        } else if (schoolName.equals("seoul")) {
+            schoolNameView.setText("서울대학교 채팅");
+        }
         return view;
     }
 
@@ -85,6 +99,7 @@ public class MyNotificationsFragment extends Fragment {
                     }
                 });
     }
+
 
     @Override
     public void onStop() {
