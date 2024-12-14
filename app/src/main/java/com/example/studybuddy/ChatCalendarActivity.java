@@ -1,6 +1,8 @@
 package com.example.studybuddy;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -30,6 +32,7 @@ import java.util.Map;
 public class ChatCalendarActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private RecyclerView selectedDateRecyclerView;
+    private SharedPreferences userPref, chatNamePref;
     private ScheduleAdapter scheduleAdapter;
     private List<ScheduleModel> scheduleList;
     private String selectedDate = null; // 선택된 날짜
@@ -49,6 +52,8 @@ public class ChatCalendarActivity extends AppCompatActivity {
             finish();
             return;
         }
+        chatNamePref = getSharedPreferences("chatName", Context.MODE_PRIVATE);
+        userPref = getSharedPreferences("userData", Context.MODE_PRIVATE);
 
         // Firestore 초기화
         db = FirebaseFirestore.getInstance();
@@ -145,11 +150,17 @@ public class ChatCalendarActivity extends AppCompatActivity {
                 .document("schedules")
                 .collection("schedules");
 
+        String nameset = null;
+        if (chatNamePref.getString("Name","none").contains("익명")){
+            nameset = userPref.getString("Nickname","none");
+        } else if (chatNamePref.getString("Name","none").contains("실명")){
+            nameset = userPref.getString("Name","none");
+        }
         Map<String, Object> scheduleData = new HashMap<>();
         scheduleData.put("title", title);
         scheduleData.put("date", selectedDate);
         scheduleData.put("time", time);
-        scheduleData.put("name", userName);
+        scheduleData.put("name", nameset);
         scheduleData.put("profileUrl", userProfileUrl);
 
         schedulesRef.add(scheduleData)
