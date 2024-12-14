@@ -27,6 +27,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -112,6 +113,19 @@ public class GoalDetailsFragment extends Fragment {
                 requireActivity().onBackPressed();
             }
         });
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         return view;
     }
@@ -333,21 +347,73 @@ public class GoalDetailsFragment extends Fragment {
                 .addOnFailureListener(e -> Log.e("logchk", "Error endorsing goal: " + e.getMessage()));
     }
 
-    private void saveNotification(String recipientId, String goalTitle, String chatRoomId, String goalId, String senderId) {
-        Map<String, Object> notificationData = new HashMap<>();
-        notificationData.put("userId", recipientId); // 알림을 받을 사용자 ID (목표 작성자)
-        notificationData.put("title", "목표가 인정받았습니다!");
-        notificationData.put("message", "당신의 목표 \"" + goalTitle + "\"이 " + senderId + "에게 인정되었습니다!");
-        notificationData.put("chatRoomId", chatRoomId);
-        notificationData.put("goalId", goalId);
-        notificationData.put("senderId", senderId); // 알림을 보낸 사용자 ID
-        notificationData.put("timestamp", FieldValue.serverTimestamp());
+    private void saveNotification(String recipientId, String goalTitle, String chatRoomId, String goalId, String actualSenderId) {
+        // chatSetting에서 설정 가져오기
+        DocumentReference chatSettingRef = db.collection("soongsil").document("chat")
+                .collection("chatRoom").document(chatRoomId.contains("private") ? "privateChat" : "singleChat")
+                .collection(chatRoomId).document("chatSetting");
 
-        db.collection("notifications")
-                .add(notificationData)
-                .addOnSuccessListener(documentReference -> Log.d("logchk", "Notification saved successfully!"))
-                .addOnFailureListener(e -> Log.e("logchk", "Failed to save notification: " + e.getMessage()));
+        chatSettingRef.get().addOnSuccessListener(settingSnapshot -> {
+            String chatnameset = settingSnapshot.getString("name") != null ? settingSnapshot.getString("name") : "anonymous";
+
+            // userInfo 컬렉션에서 닉네임 또는 이름 가져오기
+            db.collection("userInfo").get().addOnSuccessListener(userSnapshot -> {
+                String senderDisplayName = "Unknown User";
+
+                for (QueryDocumentSnapshot userDoc : userSnapshot) {
+                    if (userDoc.getId().equals(actualSenderId)) {
+                        if ("realName".equals(chatnameset)) {
+                            senderDisplayName = userDoc.getString("Name") != null ? userDoc.getString("Name") : "Unknown User";
+                        } else if ("anonymous".equals(chatnameset)) {
+                            senderDisplayName = userDoc.getString("Nickname") != null ? userDoc.getString("Nickname") : "Unknown User";
+                        }
+                        break;
+                    }
+                }
+
+                // 알림 데이터 생성
+                Map<String, Object> notificationData = new HashMap<>();
+                notificationData.put("userId", recipientId); // 알림을 받을 사용자 ID (목표 작성자)
+                notificationData.put("title", "목표가 인정받았습니다!");
+                notificationData.put("message", "당신의 목표 \"" + goalTitle + "\"이 " + senderDisplayName + "에게 인정되었습니다!");
+                notificationData.put("chatRoomId", chatRoomId);
+                notificationData.put("goalId", goalId);
+                notificationData.put("senderId", senderDisplayName); // 변환된 이름 저장
+                notificationData.put("timestamp", FieldValue.serverTimestamp());
+
+                db.collection("notifications")
+                        .add(notificationData)
+                        .addOnSuccessListener(documentReference -> Log.d("logchk", "Notification saved successfully!"))
+                        .addOnFailureListener(e -> Log.e("logchk", "Failed to save notification: " + e.getMessage()));
+            });
+        }).addOnFailureListener(e -> Log.e("logchk", "Failed to fetch chat setting: " + e.getMessage()));
     }
+
+
+
+
+//    private void saveNotification(String recipientId, String goalTitle, String chatRoomId, String goalId, String senderId) {
+//        DocumentReference chatSettingRef = db.collection("soongsil").document("chat")
+//                .collection("chatRoom").document(chatRoomId.contains("private") ? "privateChat" : "singleChat")
+//                .collection(chatRoomId).document("chatSetting")
+//                .collection("setting").document("setting");
+//
+//
+//
+//        Map<String, Object> notificationData = new HashMap<>();
+//        notificationData.put("userId", recipientId); // 알림을 받을 사용자 ID (목표 작성자)
+//        notificationData.put("title", "목표가 인정받았습니다!");
+//        notificationData.put("message", "당신의 목표 \"" + goalTitle + "\"이 " + senderId + "에게 인정되었습니다!");
+//        notificationData.put("chatRoomId", chatRoomId);
+//        notificationData.put("goalId", goalId);
+//        notificationData.put("senderId", senderId); // 알림을 보낸 사용자 ID
+//        notificationData.put("timestamp", FieldValue.serverTimestamp());
+//
+//        db.collection("notifications")
+//                .add(notificationData)
+//                .addOnSuccessListener(documentReference -> Log.d("logchk", "Notification saved successfully!"))
+//                .addOnFailureListener(e -> Log.e("logchk", "Failed to save notification: " + e.getMessage()));
+//    }
 
 
 
