@@ -21,7 +21,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+import java.util.Map;
+
 public class ChatTimerFragment extends Fragment {
+    private FirebaseFirestore firestore;
+    private FirebaseAuth firebaseAuth;
+
 
     private TextView timerText;         // 시간 표시 텍스트
     private ProgressBar circularProgress; // 원형 ProgressBar
@@ -81,6 +90,9 @@ public class ChatTimerFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat_timer, container, false);
 
+        // Firestore와 FirebaseAuth 초기화
+        firestore = FirebaseFirestore.getInstance();
+        firebaseAuth = FirebaseAuth.getInstance();
         // View 초기화
         timerText = view.findViewById(R.id.timer_text);
         circularProgress = view.findViewById(R.id.circular_progress);
@@ -103,8 +115,14 @@ public class ChatTimerFragment extends Fragment {
 
 
         registerButton.setOnClickListener(v -> {
+
+            RegisterBottomSheet bottomSheet = new RegisterBottomSheet();
+            bottomSheet.setRegisterListener((subjectName, memo) -> {
+                // Firestore에 데이터 저장
+                saveTimeToFirestore(timerText.getText().toString(), subjectName, memo);
+            });
+            bottomSheet.show(getParentFragmentManager(), bottomSheet.getTag());
             Toast.makeText(getContext(), "공부 시간을 저장합니다.", Toast.LENGTH_SHORT).show();
-            // 여기에 Firestore 저장 로직을 추가하거나 새로운 기능을 추가할 수 있습니다.
         });
 
         rankingButton.setOnClickListener(v -> {
@@ -138,6 +156,29 @@ public class ChatTimerFragment extends Fragment {
         });
 
         return view;
+    }
+
+    private void saveTimeToFirestore(String elapsedTime, String subjectName, String memo) {
+        // 현재 사용자 ID 가져오기 (익명 사용자 처리)
+        String userId = firebaseAuth.getCurrentUser() != null ? firebaseAuth.getCurrentUser().getUid() : "anonymous";
+
+        // Firestore에 저장할 데이터 준비
+        Map<String, Object> studySession = new HashMap<>();
+        studySession.put("user_id", userId);
+        studySession.put("elapsed_time", elapsedTime);
+        studySession.put("subject_name", subjectName);
+        studySession.put("memo", memo);
+        studySession.put("timestamp", System.currentTimeMillis());
+
+        // Firestore에 데이터 추가
+        firestore.collection("study_sessions")
+                .add(studySession)
+                .addOnSuccessListener(documentReference -> {
+                    Toast.makeText(getContext(), "공부 기록이 저장되었습니다!", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "저장 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void updateTimer() {
