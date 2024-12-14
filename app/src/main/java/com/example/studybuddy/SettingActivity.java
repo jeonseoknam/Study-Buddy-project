@@ -33,6 +33,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -110,10 +111,13 @@ public class SettingActivity extends AppCompatActivity {
                     }
                     data.put("Password", newPassword);
                     data.put("School", newSchool);
+                    data.put("ProfileImage", userPref.getString("Profile",null));
                     editor.putString("Password",newPassword);
-                    editor.apply();
+                    editor.commit();
                     db.collection("userInfo").document(mAuth.getCurrentUser().getUid()).update(data);
                     mAuth.getCurrentUser().updatePassword(newPassword);
+
+                    Log.d("logchk", "onSuccess: "+userPref.getString("Profile",null));
                     Toast.makeText(SettingActivity.this, "프로필 설정 완료", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(SettingActivity.this, MainActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -134,18 +138,33 @@ public class SettingActivity extends AppCompatActivity {
                         imgUri = intent.getData();
                         Glide.with(binding.profileChange).load(imgUri).into(binding.profileChange);
                         StorageReference stoRef = storage.getReference("profileImage/" + mAuth.getCurrentUser().getUid());
-                        stoRef.putFile(imgUri);
-                        stoRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        stoRef.putFile(imgUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
-                            public void onSuccess(Uri uri) {
-                                SharedPreferences.Editor editor = userPref.edit();
-                                editor.putString("Profile", uri.toString());
-                                editor.apply();
-                                Map<String, Object> data = new HashMap<>();
-                                data.put("ProfileImage", userPref.getString("Profile",null));
-                                db.collection("userInfo").document(mAuth.getCurrentUser().getUid()).update(data);
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                stoRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                    @Override
+                                    public void onSuccess(Uri uri) {
+                                        SharedPreferences.Editor editor = userPref.edit();
+                                        Log.d("logchk", "onSuccess: "+uri);
+                                        editor.putString("Profile", uri.toString());
+                                        editor.commit();
+                                        Log.d("logchk", "onSuccess: "+userPref.getString("Profile",null));
+                                        editor.putString("Profile", uri.toString());
+                                        editor.commit();
+                                        try {
+                                            Thread.sleep(1000);
+                                        } catch (InterruptedException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        Map<String, Object> data = new HashMap<>();
+                                        data.put("ProfileImage", userPref.getString("Profile",null));
+                                        Log.d("logchk", "onSuccess: "+userPref.getString("Profile",null));
+                                        db.collection("userInfo").document(mAuth.getCurrentUser().getUid()).update(data);
+                                    }
+                                });
                             }
                         });
+
                     }
                 }
             }
