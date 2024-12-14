@@ -149,23 +149,25 @@ public class TimeListAdapter extends RecyclerView.Adapter<TimeListAdapter.ViewHo
             rankingRef.add(record)
                     .addOnSuccessListener(documentReference -> {
                         Toast.makeText(v.getContext(), "랭킹에 성공적으로 등록되었습니다.", Toast.LENGTH_SHORT).show();
-                        docRef.collection(chatNamePref.getString("Name","none")).document("chatSetting").collection("setting")
-                                .document("user").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                        List<String> users = new ArrayList<>(task.getResult().getData().keySet());
-                                        Log.d("logchk", "onComplete: " + chatNamePref.getString("Name","none"));
-                                        for (String userid : users){
-                                            String nameset = null;
-                                            if (chatNamePref.getString("Name","none").contains("익명")){
-                                                nameset = userPref.getString("Nickname","none");
-                                            } else if (chatNamePref.getString("Name","none").contains("실명")) {
-                                                nameset = userPref.getString("Name","none");
+                        if (chatNameSet.equals("privateChat")) {
+                            docRef.collection(chatNamePref.getString("Name", "none")).document("chatSetting").collection("setting")
+                                    .document("user").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                            List<String> users = new ArrayList<>(task.getResult().getData().keySet());
+                                            Log.d("logchk", "onComplete: " + chatNamePref.getString("Name", "none"));
+                                            for (String userid : users) {
+                                                String nameset = null;
+                                                if (chatNamePref.getString("Name", "none").contains("익명")) {
+                                                    nameset = userPref.getString("Nickname", "none");
+                                                } else if (chatNamePref.getString("Name", "none").contains("실명")) {
+                                                    nameset = userPref.getString("Name", "none");
+                                                }
+                                                saveNotification(userid, session.getElapsed_time(), chatNamePref.getString("Name", "none"), nameset);
                                             }
-                                            saveNotification(userid,session.getElapsed_time(),chatNamePref.getString("Name","none"),nameset);
                                         }
-                                    }
-                                });
+                                    });
+                        }
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(v.getContext(), "랭킹 등록 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
