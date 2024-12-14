@@ -29,12 +29,15 @@ import com.bumptech.glide.Glide;
 import com.example.studybuddy.databinding.FragmentChatRoomMenuBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -44,8 +47,9 @@ public class ChatRoomMenuFragment extends Fragment {
     private String nickName, chatOpen, chatCode = "", nameSet;
     private SharedPreferences userPref;
     private SharedPreferences chatNamePref;
+    private FirebaseAuth mAuth;
     private FirebaseFirestore db;
-    private Button chatCodeButton;
+    private Button chatCodeButton, getOutButton;
     private TextView userlisttext;
     UserAdapter adapter;
     ArrayList<ChatUserItem> userList = new ArrayList<>();
@@ -60,6 +64,7 @@ public class ChatRoomMenuFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_chat_room_menu,container,false);
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
         chatID = chatNamePref.getString("Name", "none");
         chatOpen = chatNamePref.getString("open","singleChat");
@@ -68,6 +73,7 @@ public class ChatRoomMenuFragment extends Fragment {
 
         chatCodeButton = view.findViewById(R.id.btn_Invite);
         userlisttext = view.findViewById(R.id.listText);
+        getOutButton = view.findViewById(R.id.btn_out);
         if (chatOpen.equals("privateChat")) {
             CollectionReference chatRef = db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom").document(chatOpen).collection(chatID);
             chatRef.document("chatSetting").collection("setting")
@@ -107,6 +113,7 @@ public class ChatRoomMenuFragment extends Fragment {
         } else if (chatOpen.equals("singleChat")) {
             chatCodeButton.setVisibility(View.GONE);
             userlisttext.setVisibility(View.GONE);
+            getOutButton.setVisibility(View.GONE);
         }
 
         return view;
@@ -144,6 +151,23 @@ public class ChatRoomMenuFragment extends Fragment {
             }
         });
 
+        getOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Map<String,Object> update = new HashMap<>();
+                update.put(mAuth.getCurrentUser().getUid(), FieldValue.delete());
+                CollectionReference chatRef = db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom").document(chatOpen).collection(chatID);
+                chatRef.document("chatSetting").collection("setting")
+                        .document("user").update(update).addOnCompleteListener(new OnCompleteListener<Void>() {
+                            @Override
+                            public void onComplete(@NonNull Task<Void> task) {
+                                getActivity().getSupportFragmentManager().beginTransaction()
+                                        .replace(id.fragment_container,new ClassChatListFragment())
+                                        .commit();
+                            }
+                        });
+            }
+        });
         Button btn_calendar = view.findViewById(R.id.btn_classCalendar);
         btn_calendar.setOnClickListener(new View.OnClickListener() {
             @Override
