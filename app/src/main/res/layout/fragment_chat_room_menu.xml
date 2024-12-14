@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -13,6 +13,7 @@
 
     <!-- 상단 프로필 및 제목 -->
     <RelativeLayout
+        android:id="@+id/setlayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp">
@@ -31,7 +32,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="채팅 제목"
-            android:textSize="24dp"
+            android:textSize="22dp"
+            android:maxWidth="270dp"
             android:textStyle="bold"
             android:gravity="center"
             android:layout_toRightOf="@id/accountImage"
@@ -53,30 +55,10 @@
             tools:ignore="TouchTargetSizeCheck" />
 
         <TextView
-            android:id="@+id/chatSettingText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/accountImage"
-            android:layout_alignLeft="@id/accountImage"
-            android:layout_marginTop="20dp"
-            android:text="채팅방 설정"
-            android:textSize="15sp"/>
-
-        <Button
-            android:id="@+id/btn_chatSettings"
-            android:layout_width="150dp"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/chatSettingText"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="10dp"
-            android:text="설정"
-            android:drawableLeft="@drawable/baseline_settings_24"/>
-
-        <TextView
             android:id="@+id/chatCalendarText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/btn_chatSettings"
+            android:layout_below="@id/accountImage"
             android:layout_alignLeft="@id/accountImage"
             android:layout_marginTop="20dp"
             android:text="과목 캘린더"
@@ -132,37 +114,50 @@
             android:text="목표인증"
             android:drawableLeft="@drawable/baseline_access_time_24"/>
 
-
-
     </RelativeLayout>
-
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="148dp"
-        android:layout_gravity="bottom">
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/listText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="현재 참여 인원"
+            android:layout_marginLeft="20dp"
+            android:textSize="16dp"
+            android:layout_marginBottom="5dp"
+            android:textStyle="bold"/>
 
-        <!-- 사용자 리스트 RecyclerView -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/userRecyclerView"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="bottom"
             android:layout_weight="1"
             android:clipToPadding="false"
-            android:paddingBottom="8dp" />
+            android:layout_marginBottom="4dp"
+            android:layout_marginLeft="15dp"
+            android:paddingBottom="8dp"
+            android:scrollbars="vertical"
+            tools:listitem="@layout/item_chatuser"/>
 
-        <!-- 초대 버튼 -->
-        <Button
-            android:id="@+id/btn_Invite"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="90dp"
-            android:layout_marginTop="16dp"
-            android:maxWidth="15dp"
-            android:layout_marginRight="90dp"
-            android:text="초대코드 : " />
-
-
+            android:layout_gravity="bottom">
+            <Button
+                android:layout_gravity="bottom"
+                android:id="@+id/btn_Invite"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="90dp"
+                android:maxWidth="15dp"
+                android:layout_marginRight="90dp"
+                android:text="초대코드 : " />
+        </LinearLayout>
     </LinearLayout>
 
 
-</FrameLayout>
+</LinearLayout>

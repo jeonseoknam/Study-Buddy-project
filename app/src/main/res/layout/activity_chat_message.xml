@@ -33,7 +33,7 @@
         android:layout_alignLeft="@+id/username"
         android:layout_below="@+id/username"
         android:orientation="vertical"
-        android:background="@drawable/rounded_button">
+        android:background="@drawable/rounded_message_background">
         <ImageView
             android:id="@+id/messageImage"
             android:layout_width="1dp"

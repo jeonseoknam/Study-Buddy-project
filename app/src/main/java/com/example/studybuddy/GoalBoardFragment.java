@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.ArrayAdapter;
@@ -25,10 +24,14 @@ import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.studybuddy.GoalRegistrationActivity;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
@@ -59,6 +62,7 @@ public class GoalBoardFragment extends Fragment {
     private Spinner spinnerGoalFilter;
     private FloatingActionButton addGoalButton;
     private SharedPreferences sharedPreferences;
+    private CollectionReference chatRef;
 
     private FirebaseFirestore db;
 
@@ -72,8 +76,6 @@ public class GoalBoardFragment extends Fragment {
 
         // SharedPreferences 설정
         sharedPreferences = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-
-
 
 
 
@@ -93,6 +95,14 @@ public class GoalBoardFragment extends Fragment {
         recyclerViewGoals.setLayoutManager(new LinearLayoutManager(getContext()));
         goalAdapter = new GoalAdapter(new ArrayList<>());
         recyclerViewGoals.setAdapter(goalAdapter);
+
+//        chatRef.document("chatSetting").collection("setting")
+//                .document("setting").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+//                    @Override
+//                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+//                        chatnameset = task.getResult().getData().get("name").toString();
+//                    }
+//                });
 
         // RecyclerView 아이템 클릭 리스너 설정
         goalAdapter.setOnItemClickListener(new GoalAdapter.OnItemClickListener() {
@@ -156,17 +166,6 @@ public class GoalBoardFragment extends Fragment {
         refreshGoals();
         loadGoalsFromFirebase();
 
-        ImageButton backButton = view.findViewById(R.id.backButton);
-
-        backButton.setOnClickListener(v -> {
-
-            if (getParentFragmentManager().getBackStackEntryCount() > 0) {
-                getParentFragmentManager().popBackStack();
-            } else {
-                requireActivity().onBackPressed();
-            }
-        });
-
         return view;
     }
 
@@ -227,6 +226,7 @@ public class GoalBoardFragment extends Fragment {
         }
     }
 
+
     private void loadGoalsFromFirebase() {
         String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
         CollectionReference goalsRef = db.collection("Goals").document(chatRoomId).collection("goals");
@@ -235,214 +235,79 @@ public class GoalBoardFragment extends Fragment {
 
         // 닉네임 캐시를 위한 맵
         Map<String, String> userNicknameMap = new HashMap<>();
+        String[] chatnameset = new String[1]; // chatnameset 값을 저장할 배열
 
-        // userInfo 컬렉션에서 닉네임 또는 이름 미리 로드
-        userInfoRef.get().addOnSuccessListener(userSnapshot -> {
-            for (QueryDocumentSnapshot userDoc : userSnapshot) {
-                String userId = userDoc.getId();
-                String displayName = userDoc.getString("Nickname") != null
-                        ? userDoc.getString("Nickname") // 닉네임 우선
-                        : userDoc.getString("Name") != null
-                        ? userDoc.getString("Name") // 실명 대체
-                        : "Unknown User";
+        // 공통 경로 설정
+        DocumentReference chatSettingRef = db.collection("soongsil").document("chat")
+                .collection("chatRoom").document(chatRoomId.contains("private") ? "privateChat" : "singleChat")
+                .collection(chatRoomId).document("chatSetting")
+                .collection("setting").document("setting");
 
-                userNicknameMap.put(userId, displayName);
-            }
+        // chatSetting에서 chatnameset 값 가져오기
+        chatSettingRef.get().addOnSuccessListener(settingSnapshot -> {
+            chatnameset[0] = settingSnapshot.getString("name") != null ? settingSnapshot.getString("name") : "anonymous";
 
-            // Goals 데이터를 로드
-            goalsRef.get().addOnSuccessListener(goalSnapshot -> {
-                originalGoalList.clear();
+            // userInfo 컬렉션에서 닉네임 또는 이름 미리 로드
+            userInfoRef.get().addOnSuccessListener(userSnapshot -> {
+                for (QueryDocumentSnapshot userDoc : userSnapshot) {
+                    String userId = userDoc.getId();
 
-                for (QueryDocumentSnapshot doc : goalSnapshot) {
-                    String id = doc.getId();
-                    String title = doc.getString("title");
-                    int dueInDays = doc.getLong("dueInDays") != null ? doc.getLong("dueInDays").intValue() : 0;
-                    int likes = doc.getLong("likes") != null ? doc.getLong("likes").intValue() : 0;
-                    int goalLikes = doc.getLong("goalLikes") != null ? doc.getLong("goalLikes").intValue() : 0;
-                    String userId = doc.getString("userId");
-                    String status = doc.getString("status") != null ? doc.getString("status") : "pending";
-                    String certificationImageUrl = doc.getString("certificationImageUrl");
-                    String certificationDescription = doc.getString("certificationDescription");
-
-                    // 닉네임 또는 실명 가져오기
-                    String displayName = userNicknameMap.getOrDefault(userId, "Unknown User");
-
-                    // Goal 객체 생성
-                    Goal goal = new Goal(
-                            id,
-                            title,
-                            dueInDays,
-                            likes,
-                            goalLikes,
-                            status,
-                            certificationImageUrl,
-                            certificationDescription,
-                            displayName
-                    );
-
-                    // 탭에 따른 목표 필터링 (나의 목표 / 스터디 메이트의 목표)
-                    if ((currentTab.equals("나의 목표") && currentUserId.equals(userId)) ||
-                            (currentTab.equals("스터디 메이트의 목표") && !currentUserId.equals(userId))) {
-                        originalGoalList.add(goal);
+                    // chatnameset에 따라 닉네임 또는 실명 선택
+                    String displayName = "Unknown User";
+                    if ("realName".equals(chatnameset[0])) {
+                        displayName = userDoc.getString("Name") != null ? userDoc.getString("Name") : "Unknown User";
+                    } else if ("anonymous".equals(chatnameset[0])) {
+                        displayName = userDoc.getString("Nickname") != null ? userDoc.getString("Nickname") : "Unknown User";
                     }
+
+                    userNicknameMap.put(userId, displayName);
                 }
 
-                // 모든 데이터를 정렬 및 필터링 후 RecyclerView 갱신
-                sortGoalsByDueDate();
-                filterGoals(currentFilter);
-            }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch goals", e));
-        }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch user info", e));
+                // Goals 데이터를 로드
+                goalsRef.get().addOnSuccessListener(goalSnapshot -> {
+                    originalGoalList.clear();
+
+                    for (QueryDocumentSnapshot doc : goalSnapshot) {
+                        String id = doc.getId();
+                        String title = doc.getString("title");
+                        int dueInDays = doc.getLong("dueInDays") != null ? doc.getLong("dueInDays").intValue() : 0;
+                        int likes = doc.getLong("likes") != null ? doc.getLong("likes").intValue() : 0;
+                        int goalLikes = doc.getLong("goalLikes") != null ? doc.getLong("goalLikes").intValue() : 0;
+                        String userId = doc.getString("userId");
+                        String status = doc.getString("status") != null ? doc.getString("status") : "pending";
+                        String certificationImageUrl = doc.getString("certificationImageUrl");
+                        String certificationDescription = doc.getString("certificationDescription");
+
+                        // 닉네임 또는 실명 가져오기
+                        String displayName = userNicknameMap.getOrDefault(userId, "Unknown User");
+
+                        // Goal 객체 생성
+                        Goal goal = new Goal(
+                                id,
+                                title,
+                                dueInDays,
+                                likes,
+                                goalLikes,
+                                status,
+                                certificationImageUrl,
+                                certificationDescription,
+                                displayName
+                        );
+
+                        // 탭에 따른 목표 필터링 (나의 목표 / 스터디 메이트의 목표)
+                        if ((currentTab.equals("나의 목표") && currentUserId.equals(userId)) ||
+                                (currentTab.equals("스터디 메이트의 목표") && !currentUserId.equals(userId))) {
+                            originalGoalList.add(goal);
+                        }
+                    }
+
+                    // 모든 데이터를 정렬 및 필터링 후 RecyclerView 갱신
+                    sortGoalsByDueDate();
+                    filterGoals(currentFilter);
+                }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch goals", e));
+            }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch user info", e));
+        }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch chatnameset", e));
     }
-
-
-//    private void loadGoalsFromFirebase() {
-//        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
-//        CollectionReference goalsRef = db.collection("Goals").document(chatRoomId).collection("goals");
-//        CollectionReference userInfoRef = db.collection("userInfo"); // userInfo 컬렉션 참조
-//        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-//
-//        // 닉네임 캐시를 위한 맵
-//        Map<String, String> userNicknameMap = new HashMap<>();
-//
-//        // userInfo 컬렉션에서 닉네임 미리 로드
-//        userInfoRef.get().addOnSuccessListener(userSnapshot -> {
-//            for (QueryDocumentSnapshot userDoc : userSnapshot) {
-//                String userId = userDoc.getId();
-//                String nickName = userDoc.getString("Nickname");
-//                userNicknameMap.put(userId, nickName != null ? nickName : "Unknown User");
-//            }
-//
-//            // Goals 데이터를 로드
-//            goalsRef.get().addOnSuccessListener(goalSnapshot -> {
-//                originalGoalList.clear();
-//
-//                for (QueryDocumentSnapshot doc : goalSnapshot) {
-//                    String id = doc.getId();
-//                    String title = doc.getString("title");
-//                    int dueInDays = doc.getLong("dueInDays") != null ? doc.getLong("dueInDays").intValue() : 0;
-//                    int likes = doc.getLong("likes") != null ? doc.getLong("likes").intValue() : 0;
-//                    int goalLikes = doc.getLong("goalLikes") != null ? doc.getLong("goalLikes").intValue() : 0;
-//                    String userId = doc.getString("userId");
-//                    String status = doc.getString("status") != null ? doc.getString("status") : "pending";
-//                    String certificationImageUrl = doc.getString("certificationImageUrl");
-//                    String certificationDescription = doc.getString("certificationDescription");
-//
-//                    // 닉네임 캐시에서 가져오기
-//                    String nickName = userNicknameMap.getOrDefault(userId, "Unknown User");
-//
-//                    // Goal 객체 생성
-//                    Goal goal = new Goal(
-//                            id,
-//                            title,
-//                            dueInDays,
-//                            likes,
-//                            goalLikes,
-//                            status,
-//                            certificationImageUrl,
-//                            certificationDescription,
-//                            nickName
-//                    );
-//
-//                    // 탭에 따른 목표 필터링 (나의 목표 / 스터디 메이트의 목표)
-//                    if ((currentTab.equals("나의 목표") && currentUserId.equals(userId)) ||
-//                            (currentTab.equals("스터디 메이트의 목표") && !currentUserId.equals(userId))) {
-//                        originalGoalList.add(goal);
-//                    }
-//                }
-//
-//                // 모든 데이터를 정렬 및 필터링 후 RecyclerView 갱신
-//                sortGoalsByDueDate();
-//                filterGoals(currentFilter);
-//            }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch goals", e));
-//        }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch user info", e));
-//    }
-
-//    private void loadGoalsFromFirebase() {
-//        String chatRoomId = getArguments().getString("chatRoomId"); // 전달받은 chatRoomId
-//        CollectionReference goalsRef = db.collection("Goals").document(chatRoomId).collection("goals");
-//        CollectionReference userInfoRef = db.collection("userInfo"); // userInfo 컬렉션 참조
-//        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-//
-//        // 익명 여부를 저장할 변수
-//        final boolean[] isAnonymous = new boolean[1];
-//
-//        // 닉네임/실명 캐시를 위한 맵
-//        Map<String, String> userNicknameMap = new HashMap<>();
-//
-//        // 익명 여부 가져오기
-//        db.collection("chatSettings").document(chatRoomId)
-//                .get()
-//                .addOnSuccessListener(chatSettingDoc -> {
-//                    if (chatSettingDoc.exists() && chatSettingDoc.contains("isAnonymous")) {
-//                        isAnonymous[0] = chatSettingDoc.getBoolean("isAnonymous"); // 익명 여부 저장
-//
-//                        // userInfo 컬렉션에서 닉네임 또는 실명 미리 로드
-//                        userInfoRef.get().addOnSuccessListener(userSnapshot -> {
-//                            for (QueryDocumentSnapshot userDoc : userSnapshot) {
-//                                String userId = userDoc.getId();
-//                                String valueToStore;
-//
-//                                // 익명 여부에 따라 닉네임 또는 실명 선택
-//                                if (isAnonymous[0]) {
-//                                    valueToStore = userDoc.getString("Nickname");
-//                                    valueToStore = valueToStore != null ? valueToStore : "Unknown User";
-//                                } else {
-//                                    valueToStore = userDoc.getString("Name");
-//                                    valueToStore = valueToStore != null ? valueToStore : "Unknown User";
-//                                }
-//
-//                                // 맵에 저장
-//                                userNicknameMap.put(userId, valueToStore);
-//                            }
-//
-//                            // Goals 데이터를 로드
-//                            goalsRef.get().addOnSuccessListener(goalSnapshot -> {
-//                                originalGoalList.clear();
-//
-//                                for (QueryDocumentSnapshot doc : goalSnapshot) {
-//                                    String id = doc.getId();
-//                                    String title = doc.getString("title");
-//                                    int dueInDays = doc.getLong("dueInDays") != null ? doc.getLong("dueInDays").intValue() : 0;
-//                                    int likes = doc.getLong("likes") != null ? doc.getLong("likes").intValue() : 0;
-//                                    int goalLikes = doc.getLong("goalLikes") != null ? doc.getLong("goalLikes").intValue() : 0;
-//                                    String userId = doc.getString("userId");
-//                                    String status = doc.getString("status") != null ? doc.getString("status") : "pending";
-//                                    String certificationImageUrl = doc.getString("certificationImageUrl");
-//                                    String certificationDescription = doc.getString("certificationDescription");
-//
-//                                    // 닉네임 또는 실명 가져오기
-//                                    String userDisplayName = userNicknameMap.getOrDefault(userId, "Unknown User");
-//
-//                                    // Goal 객체 생성
-//                                    Goal goal = new Goal(
-//                                            id,
-//                                            title,
-//                                            dueInDays,
-//                                            likes,
-//                                            goalLikes,
-//                                            status,
-//                                            certificationImageUrl,
-//                                            certificationDescription,
-//                                            userDisplayName
-//                                    );
-//
-//                                    // 탭에 따른 목표 필터링 (나의 목표 / 스터디 메이트의 목표)
-//                                    if ((currentTab.equals("나의 목표") && currentUserId.equals(userId)) ||
-//                                            (currentTab.equals("스터디 메이트의 목표") && !currentUserId.equals(userId))) {
-//                                        originalGoalList.add(goal);
-//                                    }
-//                                }
-//
-//                                // 모든 데이터를 정렬 및 필터링 후 RecyclerView 갱신
-//                                sortGoalsByDueDate();
-//                                filterGoals(currentFilter);
-//                            }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch goals", e));
-//                        }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch user info", e));
-//                    }
-//                }).addOnFailureListener(e -> Log.e(TAG, "Failed to fetch chat settings", e));
-//    }
-
-
 
     private void filterGoals(String filter) {
         List<Goal> filteredGoals = new ArrayList<>();

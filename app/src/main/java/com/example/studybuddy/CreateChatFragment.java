@@ -176,7 +176,7 @@ public class CreateChatFragment extends Fragment {
                 } else if (chatSetting.get("open").equals("privateChat") && chatCode.getText().toString().isEmpty()){
                     Toast.makeText(getContext(), "비공개의 경우 코드를 반드시 입력해야 합니다.", Toast.LENGTH_SHORT).show();
                 } else {
-                    String chatClassName = currentClass +"/"+chatNameText.getText().toString();
+                    String chatClassName = currentClass +"-"+chatNameText.getText().toString();
                     CollectionReference colRef = db.collection(userPref.getString("School", "none")).document("chat")
                             .collection("chatRoom").document(chatSetting.get("open").toString())
                         .collection("(실명)"+chatClassName).document("chatSetting")

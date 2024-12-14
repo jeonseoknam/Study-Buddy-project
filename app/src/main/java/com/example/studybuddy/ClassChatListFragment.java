@@ -3,16 +3,12 @@ package com.example.studybuddy;
 import static java.lang.Thread.sleep;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.DialogFragment;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.text.Editable;
@@ -24,39 +20,25 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
-import com.example.studybuddy.databinding.FragmentClassChatListBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabItem;
 import com.google.android.material.tabs.TabLayout;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.AggregateQuerySnapshot;
-import com.google.firebase.firestore.AggregateSource;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -124,8 +106,17 @@ public class ClassChatListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_class_chat_list, container, false);
+        TextView schoolNameView = view.findViewById(R.id.schoolChatNameText);
 
         userPref = getContext().getSharedPreferences("userData",Context.MODE_PRIVATE);
+        String schoolName = userPref.getString("School","none");
+
+        if (schoolName.equals("soongsil")){
+            schoolNameView.setText("숭실대학교 채팅");
+        } else if (schoolName.equals("seoul")) {
+            schoolNameView.setText("서울대학교 채팅");
+        }
+
         colRef = db.collection(userPref.getString("School","none")).document("chat").collection("chatRoom");
         loadChatList();
         // Inflate the layout for this fragment
@@ -199,7 +190,7 @@ public class ClassChatListFragment extends Fragment {
 
         Button searchButton = view.findViewById(R.id.btn_chatSearch);
         searchButton.setOnClickListener(view1 -> {
-            FragmentChatDialog dialog = new FragmentChatDialog();
+            ChatDialogFragment dialog = new ChatDialogFragment();
             dialog.show(getActivity().getSupportFragmentManager(),"tag");
 
         });
@@ -245,7 +236,7 @@ public class ClassChatListFragment extends Fragment {
                                         adapter.notifyDataSetChanged();
                                         //           adapter.notifyItemInserted(chatListItems.size() - 1);
                                         recyclerView.scrollToPosition(0);
-                                        Log.d("logchk", "onComplete: " + chatListItems.size());
+                                        Log.d("logchk", "onComplete: 채팅방 로딩");
 
                                     } else {
                                         Log.d("logchk", "No such document");
@@ -285,7 +276,6 @@ public class ClassChatListFragment extends Fragment {
                         colRef.document("privateChat").collection(chatList).document("chatSetting").collection("setting").document("user").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                             @Override
                             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                                //Log.d("logchk", "onComplete: " + task.getResult().getData());
                                 Map<String, Object> fdata = task.getResult().getData();
                                 if (fdata.getOrDefault(userPref.getString("UID","none"),"none").equals(userPref.getString("UID","none"))){
                                     itemsize.add(chatList);
@@ -295,7 +285,6 @@ public class ClassChatListFragment extends Fragment {
                                                 public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                                                     if (task.isSuccessful()) {
                                                         DocumentSnapshot document = task.getResult();
-                                                        Log.d("logchk", "onComplete: " + document.getData());
                                                         if (document.exists()) {
                                                             Map<String, Object> flist = document.getData();
                                                             String chatName = chatList;
@@ -304,9 +293,8 @@ public class ClassChatListFragment extends Fragment {
                                                             String profile = flist.get("profileUrl").toString();
                                                             ChatListItem item = new ChatListItem(chatName, message, time, profile);
                                                             chatListItems.add(finalSequence,item);
-                                                            Log.d("logchk", "onComplete: "+chatListItems.size());
-                                                            Log.d("logchk", "onComplete: " + itemsize.size());
                                                             if (chatListItems.size() == list.size() + itemsize.size()){
+                                                                Log.d("logchk", "onComplete: 채팅 로딩 완료");
                                                                 for (int i = 0; i < list.size() ; i++){
                                                                     for (int j= 0 ; j <chatListItems.size() ; j++){
                                                                         if (chatListItems.get(j).getName().equals("")){

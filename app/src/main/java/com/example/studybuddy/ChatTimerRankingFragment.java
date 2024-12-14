@@ -29,7 +29,7 @@ public class ChatTimerRankingFragment extends Fragment {
     private ChatTimerRankingAdapter adapter;
     private List<ChatTimerRankingItem> rankingList;
     private String chatRoomId;
-    String savedChatName;
+    String savedChatName, chatNameSet;
 
     @Nullable
     @Override
@@ -54,6 +54,7 @@ public class ChatTimerRankingFragment extends Fragment {
         // SharedPreferences 사용
         SharedPreferences chatIdPref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
         savedChatName = chatIdPref.getString("Name", "defaultChatName");
+        chatNameSet = chatIdPref.getString("open", "none");
 
         // Firestore 데이터 가져오기
         fetchRankingData();
@@ -70,7 +71,7 @@ public class ChatTimerRankingFragment extends Fragment {
         firestore.collection("soongsil")
                 .document("chat")
                 .collection("chatRoom")
-                .document("singleChat")
+                .document(chatNameSet)
                 .collection(savedChatName)
                 .document("timerRecords")
                 .collection("records")

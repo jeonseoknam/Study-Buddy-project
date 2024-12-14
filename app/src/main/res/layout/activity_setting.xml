@@ -40,9 +40,9 @@ android:fillViewport="true"> <!-- 스크롤뷰가 화면 전체를 채우도록 
         android:layout_below="@id/settingMain"
         android:layout_marginTop="20dp"
         android:layout_centerHorizontal="true"
-        android:src="@drawable/sample_profile"
+        android:src="@drawable/profile"
+        android:background="@drawable/rounded_button"
         android:scaleType="centerCrop"
-        android:background="@drawable/sample_profile"
         android:clipToOutline="true"
         android:contentDescription="Profile Image" />
 
@@ -106,7 +106,7 @@ android:fillViewport="true"> <!-- 스크롤뷰가 화면 전체를 채우도록 
         android:text="학교명"
         android:textSize="20dp"/>
 
-    <EditText
+    <TextView
         android:id="@+id/schoolNameText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
