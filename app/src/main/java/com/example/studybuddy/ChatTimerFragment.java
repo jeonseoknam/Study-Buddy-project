@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -122,7 +123,7 @@ public class ChatTimerFragment extends Fragment {
                 saveTimeToFirestore(timerText.getText().toString(), subjectName, memo);
             });
             bottomSheet.show(getParentFragmentManager(), bottomSheet.getTag());
-            Toast.makeText(getContext(), "공부 시간을 저장합니다.", Toast.LENGTH_SHORT).show();
+            Log.d("logchk", "채팅방 서버에 시간 데이터 저장");
         });
 
         rankingButton.setOnClickListener(v -> {
@@ -138,6 +139,8 @@ public class ChatTimerFragment extends Fragment {
                     .replace(R.id.fragment_container, new ChatTimerRankingFragment())
                     .addToBackStack(null)
                     .commit();
+
+            Log.d("logchk", "채팅방 랭킹 페이지로 이동");
         });
 
         historyButton.setOnClickListener(v -> {
@@ -153,6 +156,7 @@ public class ChatTimerFragment extends Fragment {
                     .replace(R.id.fragment_container, new TimeListFragment())
                     .addToBackStack(null)
                     .commit();
+            Log.d("logchk", "공부 기록 페이지로 이동");
         });
 
         return view;
