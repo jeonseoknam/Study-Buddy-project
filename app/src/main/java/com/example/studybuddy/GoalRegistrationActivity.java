@@ -83,54 +83,7 @@ public class GoalRegistrationActivity extends AppCompatActivity {
         }, year, month, date);
         datePickerDialog.show();
     }
-//    private void saveGoalToFirestore(String title, String description, long dueInDays) {
-//        FirebaseFirestore db = FirebaseFirestore.getInstance();
-//        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-//        String chatRoomId = getIntent().getStringExtra("chatRoomId"); // Intent로 전달받은 chatRoomId
-//
-//        if (chatRoomId == null || chatRoomId.isEmpty()) {
-//            Log.e("logchk", "ChatRoomId is null or empty. Goal cannot be saved.");
-//            Toast.makeText(this, "ChatRoomId가 유효하지 않습니다.", Toast.LENGTH_SHORT).show();
-//            return;
-//        }
 
-        // 익명 여부 확인
-//        db.collection("chatSettings").document(chatRoomId)
-//                .get()
-//                .addOnSuccessListener(chatSettingDoc -> {
-//                    if (chatSettingDoc.exists() && chatSettingDoc.contains("isAnonymous")) {
-//                        boolean isAnonymous = chatSettingDoc.getBoolean("isAnonymous");
-//
-//                        // 익명/실명에 따라 닉네임 또는 이름 선택
-//                        String displayName;
-//                        if (isAnonymous) {
-//                            displayName = getSharedPreferences("userPrefs", MODE_PRIVATE).getString("Nickname", "Unknown User");
-//                        } else {
-//                            displayName = getSharedPreferences("userPrefs", MODE_PRIVATE).getString("Name", "Unknown User");
-//                        }
-//
-//                        // 목표 데이터 구성
-//                        Map<String, Object> goalData = new HashMap<>();
-//                        goalData.put("title", title);
-//                        goalData.put("description", description);
-//                        goalData.put("dueInDays", dueInDays);
-//                        goalData.put("isCertified", false);
-//                        goalData.put("userId", userId);
-//                        goalData.put("displayName", displayName); // 닉네임 또는 이름 저장
-//
-//                        // 데이터 저장
-//                        db.collection("Goals").document(chatRoomId).collection("goals")
-//                                .add(goalData)
-//                                .addOnSuccessListener(documentReference -> {
-//                                    Toast.makeText(this, "목표가 등록되었습니다!", Toast.LENGTH_SHORT).show();
-//                                    setResult(RESULT_OK);
-//                                    finish(); // Activity 종료
-//                                })
-//                                .addOnFailureListener(e -> Log.e("logchk", "Error Adding Goal: " + e.getMessage()));
-//                    }
-//                })
-//                .addOnFailureListener(e -> Log.e("logchk", "Failed to fetch chat settings: " + e.getMessage()));
-//    }
 
 
     private void saveGoalToFirestore(String title, String description, long dueInDays) {
