@@ -35,7 +35,7 @@ import java.util.Map;
 
 public class GoalDetailsFragment extends Fragment {
 
-    private static final String TAG = "GoalDetailsFragment";
+    private static final String TAG = "logchk";
     private static final String GOAL_ID_KEY = "goalId";
     private static final int PICK_IMAGE_REQUEST = 1;
 
@@ -210,6 +210,7 @@ public class GoalDetailsFragment extends Fragment {
             actionButton.setOnClickListener(v -> {
                 if ("pending".equals(status)) {
                     Toast.makeText(getContext(), "아직 인증이 되지 않았습니다!", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "아직 미인증 상태입니다!");
                 } else if ("certified".equals(status)) {
                     endorseGoal(goalId); // 목표 인정 로직 호출
                 }
@@ -308,6 +309,7 @@ public class GoalDetailsFragment extends Fragment {
                     goalRef.update("goalLikes", FieldValue.increment(1))
                             .addOnSuccessListener(aVoid1 -> {
                                 Toast.makeText(getContext(), "목표가 인정되었습니다!", Toast.LENGTH_SHORT).show();
+                                Log.d(TAG, "목표 인정되었습니다!");
 
                                 // 알림 정보 Firestore에 저장
                                 goalRef.get()
@@ -335,7 +337,7 @@ public class GoalDetailsFragment extends Fragment {
         Map<String, Object> notificationData = new HashMap<>();
         notificationData.put("userId", recipientId); // 알림을 받을 사용자 ID (목표 작성자)
         notificationData.put("title", "목표가 인정받았습니다!");
-        notificationData.put("message", "당신의 목표 \"" + goalTitle + "\"이 인정되었습니다!");
+        notificationData.put("message", "당신의 목표 \"" + goalTitle + "\"이 " + senderId + "에게 인정되었습니다!");
         notificationData.put("chatRoomId", chatRoomId);
         notificationData.put("goalId", goalId);
         notificationData.put("senderId", senderId); // 알림을 보낸 사용자 ID

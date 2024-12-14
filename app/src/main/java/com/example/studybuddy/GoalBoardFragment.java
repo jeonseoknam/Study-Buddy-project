@@ -50,7 +50,7 @@ import java.util.Map;
 
 public class GoalBoardFragment extends Fragment {
 
-    private static final String TAG = "GoalBoardFragment";
+    private static final String TAG = "logchk";
     private static final String PREFS_NAME = "com.example.studybuddy.GoalPrefs";
     private static final String GOAL_LIST_KEY = "goal_list";
 
