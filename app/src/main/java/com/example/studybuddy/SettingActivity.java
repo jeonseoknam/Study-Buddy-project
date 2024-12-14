@@ -115,7 +115,9 @@ public class SettingActivity extends AppCompatActivity {
                     db.collection("userInfo").document(mAuth.getCurrentUser().getUid()).update(data);
                     mAuth.getCurrentUser().updatePassword(newPassword);
                     Toast.makeText(SettingActivity.this, "프로필 설정 완료", Toast.LENGTH_SHORT).show();
-                    finish();
+                    Intent intent = new Intent(SettingActivity.this, MainActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(intent);
                 }
             }
         });
