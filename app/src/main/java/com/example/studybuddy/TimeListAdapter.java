@@ -107,6 +107,7 @@ public class TimeListAdapter extends RecyclerView.Adapter<TimeListAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         StudySession session = timeList.get(position);
         chatNamePref = context.getSharedPreferences("chatName", Context.MODE_PRIVATE);
+        userPref = context.getSharedPreferences("userData", Context.MODE_PRIVATE);
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
         DocumentReference docRef = firestore.collection(userPref.getString("School","none")).document("chat")
                 .collection("chatRoom").document("privateChat");
@@ -148,20 +149,20 @@ public class TimeListAdapter extends RecyclerView.Adapter<TimeListAdapter.ViewHo
             rankingRef.add(record)
                     .addOnSuccessListener(documentReference -> {
                         Toast.makeText(v.getContext(), "랭킹에 성공적으로 등록되었습니다.", Toast.LENGTH_SHORT).show();
-                        docRef.collection(session.getSubject_name()).document("chatSetting").collection("setting")
+                        docRef.collection(chatNamePref.getString("Name","none")).document("chatSetting").collection("setting")
                                 .document("user").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
                                     @Override
                                     public void onComplete(@NonNull Task<DocumentSnapshot> task) {
                                         List<String> users = new ArrayList<>(task.getResult().getData().keySet());
-                                        Log.d("logchk", "onComplete: " + users);
+                                        Log.d("logchk", "onComplete: " + chatNamePref.getString("Name","none"));
                                         for (String userid : users){
                                             String nameset = null;
-                                            if (session.getSubject_name().contains("익명")){
+                                            if (chatNamePref.getString("Name","none").contains("익명")){
                                                 nameset = userPref.getString("Nickname","none");
-                                            } else if (session.getSubject_name().toString().contains("실명")) {
+                                            } else if (chatNamePref.getString("Name","none").contains("실명")) {
                                                 nameset = userPref.getString("Name","none");
                                             }
-                                            saveNotification(userid,session.getElapsed_time(),session.getSubject_name(),nameset);
+                                            saveNotification(userid,session.getElapsed_time(),chatNamePref.getString("Name","none"),nameset);
                                         }
                                     }
                                 });
