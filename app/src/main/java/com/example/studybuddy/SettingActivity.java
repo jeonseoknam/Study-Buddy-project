@@ -48,8 +48,7 @@ public class SettingActivity extends AppCompatActivity {
     ActivitySettingBinding binding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        binding = ActivitySettingBinding.inflate(getLayoutInflater());
+        super.onCreate(savedInstanceState);binding = ActivitySettingBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         mAuth = FirebaseAuth.getInstance();
@@ -114,15 +113,9 @@ public class SettingActivity extends AppCompatActivity {
                     editor.putString("Password",newPassword);
                     editor.apply();
                     db.collection("userInfo").document(mAuth.getCurrentUser().getUid()).update(data);
-                    mAuth.getCurrentUser().updatePassword(newPassword).addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()){
-                                Toast.makeText(SettingActivity.this, "프로필 설정 완료", Toast.LENGTH_SHORT).show();
-                                finish();
-                            }
-                        }
-                    });
+                    mAuth.getCurrentUser().updatePassword(newPassword);
+                    Toast.makeText(SettingActivity.this, "프로필 설정 완료", Toast.LENGTH_SHORT).show();
+                    finish();
                 }
             }
         });
