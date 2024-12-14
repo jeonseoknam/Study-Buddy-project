@@ -4,6 +4,7 @@ import static java.security.AccessController.getContext;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,11 +15,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +35,7 @@ public class TimeListAdapter extends RecyclerView.Adapter<TimeListAdapter.ViewHo
     private final String chatRoomId;
     private final FirebaseFirestore firestore;
     private final Context context; // Context를 멤버 변수로 추가
-    private SharedPreferences chatNamePref;
+    private SharedPreferences chatNamePref, userPref;
 
 
 
@@ -48,12 +54,13 @@ public class TimeListAdapter extends RecyclerView.Adapter<TimeListAdapter.ViewHo
         return new ViewHolder(view);
     }
 
-    private void saveNotification(String userId, String elapsedTime, String subjectName) {
+    private void saveNotification(String userId, String elapsedTime, String subjectName, String nameset) {
         // Firestore 인스턴스 가져오기
         FirebaseFirestore firestore = FirebaseFirestore.getInstance();
 
         // SharedPreferences에서 채팅방 이름 가져오기
         SharedPreferences chatNamePref = context.getSharedPreferences("chatName", Context.MODE_PRIVATE);
+        userPref = context.getSharedPreferences("userData", Context.MODE_PRIVATE);
         String chatRoomName = chatNamePref.getString("Name", "알 수 없는 채팅방");
 
         // 유저 닉네임 가져오기
@@ -64,7 +71,7 @@ public class TimeListAdapter extends RecyclerView.Adapter<TimeListAdapter.ViewHo
                     // 알림 메시지 생성
                     String notificationMessage = String.format(
                             " \"%s\"님이 공부 시간 \"%s\"을 랭킹에 등록하셨습니다.",
-                             userNickname, elapsedTime
+                             nameset, elapsedTime
                     );
 
                     // Firestore에 저장할 알림 데이터
@@ -97,6 +104,9 @@ public class TimeListAdapter extends RecyclerView.Adapter<TimeListAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         StudySession session = timeList.get(position);
         chatNamePref = context.getSharedPreferences("chatName", Context.MODE_PRIVATE);
+        FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+        DocumentReference docRef = firestore.collection(userPref.getString("School","none")).document("chat")
+                .collection("chatRoom").document("privateChat");
 
         holder.timeTextView.setText(session.getElapsed_time());
         holder.subjectTextView.setText("과목: " + session.getSubject_name());
@@ -135,8 +145,23 @@ public class TimeListAdapter extends RecyclerView.Adapter<TimeListAdapter.ViewHo
             rankingRef.add(record)
                     .addOnSuccessListener(documentReference -> {
                         Toast.makeText(v.getContext(), "랭킹에 성공적으로 등록되었습니다.", Toast.LENGTH_SHORT).show();
-                        // 알림 저장 메서드 호출
-                        saveNotification(session.getUser_id(), session.getElapsed_time(), session.getSubject_name());
+                        docRef.collection(session.getSubject_name()).document("chatSetting").collection("setting")
+                                .document("user").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                        List<String> users = new ArrayList<>(task.getResult().getData().keySet());
+                                        Log.d("logchk", "onComplete: " + users);
+                                        for (String userid : users){
+                                            String nameset = null;
+                                            if (session.getSubject_name().contains("익명")){
+                                                nameset = userPref.getString("Nickname","none");
+                                            } else if (session.getSubject_name().toString().contains("실명")) {
+                                                nameset = userPref.getString("Name","none");
+                                            }
+                                            saveNotification(userid,session.getElapsed_time(),session.getSubject_name(),nameset);
+                                        }
+                                    }
+                                });
                     })
                     .addOnFailureListener(e -> {
                         Toast.makeText(v.getContext(), "랭킹 등록 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
