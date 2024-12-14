@@ -29,7 +29,7 @@ public class ChatTimerRankingFragment extends Fragment {
     private ChatTimerRankingAdapter adapter;
     private List<ChatTimerRankingItem> rankingList;
     private String chatRoomId;
-    String savedChatName, chatNameSet;
+    private String savedChatName, chatNameSet, nameField;
 
     @Nullable
     @Override
@@ -57,17 +57,45 @@ public class ChatTimerRankingFragment extends Fragment {
         chatNameSet = chatIdPref.getString("open", "none");
 
         // Firestore 데이터 가져오기
-        fetchRankingData();
+        fetchSettingAndRankingData();
 
         return view;
     }
 
-    private void fetchRankingData() {
+    private void fetchSettingAndRankingData() {
         if (savedChatName == null || savedChatName.isEmpty()) {
             Toast.makeText(getContext(), "유효하지 않은 채팅방 ID입니다.", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        // 설정 데이터 가져오기
+        firestore.collection("soongsil")
+                .document("chat")
+                .collection("chatRoom")
+                .document(chatNameSet)
+                .collection(savedChatName)
+                .document("chatSetting")
+                .collection("setting")
+                .document("setting")
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // 익명/실명 설정 확인
+                        String nameSetting = documentSnapshot.getString("name");
+                        nameField = "anonymous".equals(nameSetting) ? "Nickname" : "Name";
+
+                        // 랭킹 데이터 가져오기
+                        fetchRankingData();
+                    } else {
+                        Toast.makeText(getContext(), "채팅방 설정 데이터를 찾을 수 없습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(getContext(), "설정 데이터를 가져오지 못했습니다: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void fetchRankingData() {
         firestore.collection("soongsil")
                 .document("chat")
                 .collection("chatRoom")
@@ -96,37 +124,37 @@ public class ChatTimerRankingFragment extends Fragment {
                         }
                     }
 
-                    // 총합 데이터를 닉네임으로 변환
-                    convertUserIdToNickname(userTotalTimes);
+                    // 총합 데이터를 설정에 따라 변환
+                    convertUserIdToName(userTotalTimes);
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(getContext(), "데이터를 가져오지 못했습니다: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "랭킹 데이터를 가져오지 못했습니다: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
-    private void convertUserIdToNickname(Map<String, Long> userTotalTimes) {
+    private void convertUserIdToName(Map<String, Long> userTotalTimes) {
         firestore.collection("userInfo")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
-                    Map<String, String> userIdToNickname = new HashMap<>();
+                    Map<String, String> userIdToName = new HashMap<>();
 
-                    // 유저 ID와 닉네임 매칭
+                    // 유저 ID와 닉네임/실명 매칭
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String userId = document.getString("UID");
-                        String nickname = document.getString("Nickname");
-                        if (userId != null && nickname != null) {
-                            userIdToNickname.put(userId, nickname);
+                        String name = document.getString(nameField); // 설정에 따른 필드 사용
+                        if (userId != null && name != null) {
+                            userIdToName.put(userId, name);
                         }
                     }
 
-                    // 닉네임과 총 시간을 리스트로 변환
+                    // 이름과 총 시간을 리스트로 변환
                     rankingList.clear();
                     for (Map.Entry<String, Long> entry : userTotalTimes.entrySet()) {
-                        String nickname = userIdToNickname.get(entry.getKey());
-                        if (nickname != null) {
-                            rankingList.add(new ChatTimerRankingItem(nickname, entry.getValue()));
+                        String name = userIdToName.get(entry.getKey());
+                        if (name != null) {
+                            rankingList.add(new ChatTimerRankingItem(name, entry.getValue()));
                         } else {
-                            rankingList.add(new ChatTimerRankingItem(entry.getKey(), entry.getValue())); // 닉네임이 없으면 ID 표시
+                            rankingList.add(new ChatTimerRankingItem(entry.getKey(), entry.getValue())); // 이름이 없으면 ID 표시
                         }
                     }
 
@@ -142,3 +170,4 @@ public class ChatTimerRankingFragment extends Fragment {
                 });
     }
 }
+
