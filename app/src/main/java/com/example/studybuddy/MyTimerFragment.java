@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -147,6 +148,7 @@ public class MyTimerFragment extends Fragment {
             bottomSheet.setRegisterListener((subjectName, memo) -> {
                 // Firestore에 데이터 저장
                 saveTimeToFirestore(timerText.getText().toString(), subjectName, memo);
+                Log.d("logchk", "서버에 시간 데이터 저장");
             });
             bottomSheet.show(getParentFragmentManager(), bottomSheet.getTag());
         });
@@ -159,10 +161,12 @@ public class MyTimerFragment extends Fragment {
                     .replace(R.id.fragment_container, new TimeListFragment())
                     .addToBackStack(null)
                     .commit();
+            Log.d("logchk", "공부 시간 데이터 페이지로 이동");
         });
 
         rankingButton.setOnClickListener(v -> {
             Toast.makeText(getContext(), "랭킹 페이지로 이동합니다",Toast.LENGTH_SHORT).show();
+            Log.d("logchk", "랭킹 페이지로 이동");
             requireActivity().getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragment_container, new RankingFragment())
                     .addToBackStack(null)

@@ -2,6 +2,7 @@ package com.example.studybuddy;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import androidx.activity.EdgeToEdge;
@@ -28,6 +29,7 @@ public class InitActivity extends AppCompatActivity {
                 startActivity(new Intent(InitActivity.this, SignupActivity.class ));
             }
         });
+
 
         binding.loginButton.setOnClickListener(new View.OnClickListener() {
             @Override

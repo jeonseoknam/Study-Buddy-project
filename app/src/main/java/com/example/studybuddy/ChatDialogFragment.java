@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ChatDialogFragment extends DialogFragment {
     private static final String ARG_PARAM1 = "param1";
@@ -134,12 +135,30 @@ public class ChatDialogFragment extends DialogFragment {
                             Map<String, Object> adduser = new HashMap<>();
                             adduser.put(mAuth.getCurrentUser().getUid(),mAuth.getCurrentUser().getUid());
                             docRef.collection(codeList.get(code).toString()).document("chatSetting").collection("setting")
+                                    .document("user").get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+                                        @Override
+                                        public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                                            List<String> users = new ArrayList<>(task.getResult().getData().keySet());
+                                            Log.d("logchk", "onComplete: " + users);
+                                            for (String userid : users){
+                                                String nameset = null;
+                                                if (codeList.get(code).toString().contains("익명")){
+                                                    nameset = userPref.getString("Nickname","none");
+                                                } else if (codeList.get(code).toString().contains("실명")) {
+                                                    nameset = userPref.getString("Name","none");
+                                                }
+                                                saveNotification(userid,codeList.get(code).toString(),nameset);
+                                            }
+
+                                        }
+                                    });
+                            docRef.collection(codeList.get(code).toString()).document("chatSetting").collection("setting")
                                     .document("user").update(adduser);
                             SharedPreferences.Editor editor = chatNamePref.edit();
                             editor.putString("Name",codeList.get(code).toString());
                             editor.putString("open","privateChat");
                             editor.commit();
-                            saveNotification(mAuth.getCurrentUser().getUid(),codeList.get(code).toString());
+                            //saveNotification(mAuth.getCurrentUser().getUid(),codeList.get(code).toString());
                             requireActivity().getSupportFragmentManager().beginTransaction()
                                     .replace(R.id.fragment_container, new ChatRoomFragment())
                                     .commit();
@@ -161,10 +180,10 @@ public class ChatDialogFragment extends DialogFragment {
         });
 
     }
-    private void saveNotification(String userId, String chatRoomId) {
+    private void saveNotification(String userId, String chatRoomId, String nameset) {
         Map<String, Object> notificationData = new HashMap<>();
         notificationData.put("userId", userId); // 알림을 받을 사용자 ID (목표 작성자)
-        notificationData.put("message", "채팅방에 참가하였습니다");
+        notificationData.put("message", nameset + " 님이 채팅방에 참가하였습니다");
         notificationData.put("chatRoomId", chatRoomId);
         notificationData.put("timestamp", FieldValue.serverTimestamp());
 

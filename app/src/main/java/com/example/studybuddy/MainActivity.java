@@ -65,8 +65,8 @@ public class MainActivity extends AppCompatActivity {
 
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         if (savedInstanceState == null) {
-            transferTo(ClassChatListFragment.newInstance("param1", "param2"));
-            bottomNavigationView.setSelectedItemId(R.id.chatPage);
+            transferTo(MyTimerFragment.newInstance("param1", "param2"));
+            bottomNavigationView.setSelectedItemId(R.id.timerPage);
         }
 
         bottomNavigationView.setOnItemSelectedListener(new NavigationBarView.OnItemSelectedListener() {

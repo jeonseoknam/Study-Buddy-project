@@ -2,6 +2,7 @@ package com.example.studybuddy;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CalendarView;
@@ -40,7 +41,7 @@ public class ChatCalendarActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat_calendar);
-
+        Log.d("logchk", "채팅방 캘린더 액티비티로 이동");
         // Intent로 전달받은 chatRoomId 확인
         chatRoomId = getIntent().getStringExtra("chatRoomId");
         if (chatRoomId == null || chatRoomId.isEmpty()) {
