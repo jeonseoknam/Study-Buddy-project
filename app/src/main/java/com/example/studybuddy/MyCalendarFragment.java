@@ -1,6 +1,7 @@
 package com.example.studybuddy;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -78,6 +79,7 @@ public class MyCalendarFragment extends Fragment {
                 }
 
                 saveScheduleToFirestore(schedule, time); // Firestore에 일정 저장
+                Log.d("logchk", "일정 등록 시트 호출");
             });
 
             bottomSheet.show(getChildFragmentManager(), "TimePickerBottomSheet");
