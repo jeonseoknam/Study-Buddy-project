@@ -51,8 +51,8 @@ public class TimeListFragment extends Fragment {
 
         //채팅방 이름 전달받기
         chatNamePref = getContext().getSharedPreferences("chatName", Context.MODE_PRIVATE);
-        
-        
+
+
         // chatRoomId 전달 받기
         if (getArguments() != null) {
             chatRoomId = getArguments().getString("chatRoomId", "(익명)qwerqwerwerqwe");
